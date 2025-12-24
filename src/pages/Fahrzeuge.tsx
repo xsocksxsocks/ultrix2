@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { Car, Fuel, Calendar, Gauge, Settings2 } from "lucide-react";
+import { Car, Fuel, Calendar, Gauge, Settings2, ShieldCheck, Info } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/layout/Layout";
 interface CarForSale {
@@ -67,6 +68,25 @@ const Fahrzeuge = () => {
             Entdecken Sie unsere Auswahl an geprüften Gebrauchtwagen. 
             Alle Fahrzeuge werden sorgfältig geprüft und zu fairen Preisen angeboten.
           </p>
+        </div>
+      </section>
+
+      {/* Info Banner */}
+      <section className="py-8 bg-secondary border-b border-border">
+        <div className="section-container">
+          <div className="flex items-start gap-4 bg-card p-6 rounded-lg border border-border">
+            <div className="bg-primary/10 p-3 rounded-full flex-shrink-0">
+              <ShieldCheck className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-heading text-lg font-semibold mb-2">Fahrzeugvermittlung mit Garantie</h3>
+              <p className="text-muted-foreground">
+                Wir vermitteln Fahrzeuge im Kundenauftrag. Jedes Fahrzeug durchläuft vor dem Verkauf 
+                unsere umfassende technische Prüfung. Den Fahrzeugzustand garantieren wir Ihnen 
+                vertraglich – ohne versteckte Kosten oder zusätzliche Gebühren für Sie als Käufer.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
