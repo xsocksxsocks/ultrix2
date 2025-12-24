@@ -12,6 +12,7 @@ const AdminLogin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -55,7 +56,7 @@ const AdminLogin = () => {
           .select("role")
           .eq("user_id", data.user.id)
           .eq("role", "admin")
-          .single();
+          .maybeSingle();
 
         if (!roles) {
           await supabase.auth.signOut();
@@ -86,6 +87,39 @@ const AdminLogin = () => {
     }
   };
 
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/admin`,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        toast({
+          title: "Registrierung erfolgreich",
+          description: `Benutzer ${email} wurde erstellt. User-ID: ${data.user.id}`,
+        });
+        setIsSignUp(false);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Registrierung fehlgeschlagen",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md border-border">
@@ -96,7 +130,7 @@ const AdminLogin = () => {
           <CardTitle className="font-heading text-2xl">Admin-Bereich</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={isSignUp ? handleSignUp : handleLogin} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="email">E-Mail</Label>
               <div className="relative">
@@ -122,13 +156,23 @@ const AdminLogin = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  minLength={6}
                   className="pl-10 input-classic"
                 />
               </div>
             </div>
             <Button type="submit" disabled={isLoading} className="w-full">
-              {isLoading ? "Wird angemeldet..." : "Anmelden"}
+              {isLoading ? "Wird verarbeitet..." : isSignUp ? "Registrieren" : "Anmelden"}
             </Button>
+            <div className="text-center text-sm">
+              <button
+                type="button"
+                onClick={() => setIsSignUp(!isSignUp)}
+                className="text-primary hover:underline"
+              >
+                {isSignUp ? "Bereits registriert? Anmelden" : "Noch kein Account? Registrieren"}
+              </button>
+            </div>
           </form>
         </CardContent>
       </Card>
