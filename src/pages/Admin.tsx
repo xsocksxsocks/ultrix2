@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { LogOut, Mail, Car, HandCoins, Eye, Trash2, Plus, X, Upload, Check, ShoppingCart } from "lucide-react";
+import { LogOut, Mail, Car, HandCoins, Eye, Trash2, Plus, X, Upload, Check, ShoppingCart, Pencil, StickyNote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -20,9 +20,13 @@ const Admin = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isAddCarOpen, setIsAddCarOpen] = useState(false);
+  const [isEditCarOpen, setIsEditCarOpen] = useState(false);
+  const [editingCar, setEditingCar] = useState<any>(null);
   const [selectedContact, setSelectedContact] = useState<any>(null);
   const [selectedSellRequest, setSelectedSellRequest] = useState<any>(null);
+  const [selectedInquiry, setSelectedInquiry] = useState<any>(null);
   const [newCarImages, setNewCarImages] = useState<File[]>([]);
+  const [editCarImages, setEditCarImages] = useState<File[]>([]);
   const [newCarData, setNewCarData] = useState({
     brand: "",
     model: "",
@@ -36,6 +40,21 @@ const Admin = () => {
     description: "",
     features: "",
     is_featured: false,
+  });
+  const [editCarData, setEditCarData] = useState({
+    brand: "",
+    model: "",
+    year: "",
+    mileage: "",
+    fuel_type: "",
+    transmission: "",
+    color: "",
+    power_hp: "",
+    price: "",
+    description: "",
+    features: "",
+    is_featured: false,
+    existingImages: [] as string[],
   });
 
   useEffect(() => {
@@ -51,7 +70,7 @@ const Admin = () => {
         .select("role")
         .eq("user_id", session.user.id)
         .eq("role", "admin")
-        .single();
+        .maybeSingle();
 
       if (!roles) {
         await supabase.auth.signOut();
@@ -141,6 +160,20 @@ const Admin = () => {
     },
   });
 
+  const updateContactNotes = useMutation({
+    mutationFn: async ({ id, notes }: { id: string; notes: string }) => {
+      const { error } = await supabase
+        .from("contact_requests")
+        .update({ notes })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-contacts"] });
+      toast({ title: "Notiz gespeichert" });
+    },
+  });
+
   const markSellRequestRead = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
@@ -150,28 +183,6 @@ const Admin = () => {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-sell-requests"] }),
-  });
-
-  const markCarInquiryRead = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("car_inquiries")
-        .update({ is_read: true })
-        .eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-car-inquiries"] }),
-  });
-
-  const deleteCarInquiry = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("car_inquiries").delete().eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-car-inquiries"] });
-      toast({ title: "Anfrage gelöscht" });
-    },
   });
 
   const updateSellRequestStatus = useMutation({
@@ -188,6 +199,20 @@ const Admin = () => {
     },
   });
 
+  const updateSellRequestNotes = useMutation({
+    mutationFn: async ({ id, notes }: { id: string; notes: string }) => {
+      const { error } = await supabase
+        .from("car_sell_requests")
+        .update({ notes })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-sell-requests"] });
+      toast({ title: "Notiz gespeichert" });
+    },
+  });
+
   const deleteSellRequest = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("car_sell_requests").delete().eq("id", id);
@@ -195,6 +220,42 @@ const Admin = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-sell-requests"] });
+      toast({ title: "Anfrage gelöscht" });
+    },
+  });
+
+  const markCarInquiryRead = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("car_inquiries")
+        .update({ is_read: true })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-car-inquiries"] }),
+  });
+
+  const updateCarInquiryNotes = useMutation({
+    mutationFn: async ({ id, notes }: { id: string; notes: string }) => {
+      const { error } = await supabase
+        .from("car_inquiries")
+        .update({ notes })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-car-inquiries"] });
+      toast({ title: "Notiz gespeichert" });
+    },
+  });
+
+  const deleteCarInquiry = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("car_inquiries").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-car-inquiries"] });
       toast({ title: "Anfrage gelöscht" });
     },
   });
@@ -240,7 +301,6 @@ const Admin = () => {
     }
 
     try {
-      // Upload images
       const imageUrls: string[] = [];
       for (const image of newCarImages) {
         const fileName = `cars/${Date.now()}-${Math.random().toString(36).substring(7)}-${image.name}`;
@@ -253,7 +313,6 @@ const Admin = () => {
         imageUrls.push(urlData.publicUrl);
       }
 
-      // Insert car
       const { error } = await supabase.from("cars_for_sale").insert({
         brand: newCarData.brand,
         model: newCarData.model,
@@ -287,6 +346,89 @@ const Admin = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleEditCar = async () => {
+    if (!editingCar) return;
+
+    try {
+      let imageUrls = [...editCarData.existingImages];
+
+      // Upload new images
+      for (const image of editCarImages) {
+        const fileName = `cars/${Date.now()}-${Math.random().toString(36).substring(7)}-${image.name}`;
+        const { error: uploadError } = await supabase.storage
+          .from("car-images")
+          .upload(fileName, image);
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage.from("car-images").getPublicUrl(fileName);
+        imageUrls.push(urlData.publicUrl);
+      }
+
+      if (imageUrls.length === 0) {
+        toast({
+          title: "Bilder erforderlich",
+          description: "Bitte behalten Sie mindestens ein Bild.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from("cars_for_sale")
+        .update({
+          brand: editCarData.brand,
+          model: editCarData.model,
+          year: parseInt(editCarData.year),
+          mileage: parseInt(editCarData.mileage),
+          fuel_type: editCarData.fuel_type,
+          transmission: editCarData.transmission,
+          color: editCarData.color || null,
+          power_hp: editCarData.power_hp ? parseInt(editCarData.power_hp) : null,
+          price: parseFloat(editCarData.price),
+          description: editCarData.description || null,
+          features: editCarData.features ? editCarData.features.split(",").map(f => f.trim()) : null,
+          images: imageUrls,
+          is_featured: editCarData.is_featured,
+        })
+        .eq("id", editingCar.id);
+
+      if (error) throw error;
+
+      toast({ title: "Fahrzeug aktualisiert" });
+      setIsEditCarOpen(false);
+      setEditingCar(null);
+      setEditCarImages([]);
+      queryClient.invalidateQueries({ queryKey: ["admin-cars"] });
+    } catch (error: any) {
+      toast({
+        title: "Fehler",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const openEditDialog = (car: any) => {
+    setEditingCar(car);
+    setEditCarData({
+      brand: car.brand,
+      model: car.model,
+      year: car.year.toString(),
+      mileage: car.mileage.toString(),
+      fuel_type: car.fuel_type,
+      transmission: car.transmission,
+      color: car.color || "",
+      power_hp: car.power_hp?.toString() || "",
+      price: car.price.toString(),
+      description: car.description || "",
+      features: car.features?.join(", ") || "",
+      is_featured: car.is_featured || false,
+      existingImages: car.images || [],
+    });
+    setEditCarImages([]);
+    setIsEditCarOpen(true);
   };
 
   const formatDate = (date: string) => new Date(date).toLocaleDateString("de-DE", {
@@ -329,28 +471,28 @@ const Admin = () => {
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="car-inquiries" className="relative">
               <ShoppingCart className="h-4 w-4 mr-2" />
-              Fahrzeuganfragen
+              <span className="hidden sm:inline">Fahrzeuganfragen</span>
               {unreadCarInquiries > 0 && (
                 <Badge className="ml-2 bg-accent">{unreadCarInquiries}</Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="contacts" className="relative">
               <Mail className="h-4 w-4 mr-2" />
-              Kontakt
+              <span className="hidden sm:inline">Kontakt</span>
               {unreadContacts > 0 && (
                 <Badge className="ml-2 bg-accent">{unreadContacts}</Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="sell-requests" className="relative">
               <HandCoins className="h-4 w-4 mr-2" />
-              Verkauf
+              <span className="hidden sm:inline">Verkauf</span>
               {unreadSellRequests > 0 && (
                 <Badge className="ml-2 bg-accent">{unreadSellRequests}</Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="cars">
               <Car className="h-4 w-4 mr-2" />
-              Fahrzeuge
+              <span className="hidden sm:inline">Fahrzeuge</span>
             </TabsTrigger>
           </TabsList>
 
@@ -384,6 +526,12 @@ const Admin = () => {
                             <p className="text-xs text-muted-foreground mt-2">{formatDate(inquiry.created_at)}</p>
                           </div>
                           <div className="flex gap-2">
+                            <Button size="sm" variant="outline" onClick={() => {
+                              setSelectedInquiry(inquiry);
+                              if (!inquiry.is_read) markCarInquiryRead.mutate(inquiry.id);
+                            }}>
+                              <StickyNote className="h-4 w-4" />
+                            </Button>
                             {!inquiry.is_read && (
                               <Button size="sm" variant="outline" onClick={() => markCarInquiryRead.mutate(inquiry.id)}>
                                 <Check className="h-4 w-4" />
@@ -394,6 +542,11 @@ const Admin = () => {
                             </Button>
                           </div>
                         </div>
+                        {inquiry.notes && (
+                          <div className="mt-3 p-2 bg-muted rounded text-sm">
+                            <span className="font-medium">Notiz:</span> {inquiry.notes}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -430,6 +583,12 @@ const Admin = () => {
                             <p className="text-xs text-muted-foreground mt-2">{formatDate(contact.created_at)}</p>
                           </div>
                           <div className="flex gap-2">
+                            <Button size="sm" variant="outline" onClick={() => {
+                              setSelectedContact(contact);
+                              if (!contact.is_read) markContactRead.mutate(contact.id);
+                            }}>
+                              <StickyNote className="h-4 w-4" />
+                            </Button>
                             {!contact.is_read && (
                               <Button size="sm" variant="outline" onClick={() => markContactRead.mutate(contact.id)}>
                                 <Check className="h-4 w-4" />
@@ -440,6 +599,11 @@ const Admin = () => {
                             </Button>
                           </div>
                         </div>
+                        {contact.notes && (
+                          <div className="mt-3 p-2 bg-muted rounded text-sm">
+                            <span className="font-medium">Notiz:</span> {contact.notes}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -496,6 +660,11 @@ const Admin = () => {
                             </Button>
                           </div>
                         </div>
+                        {request.notes && (
+                          <div className="mt-3 p-2 bg-muted rounded text-sm">
+                            <span className="font-medium">Notiz:</span> {request.notes}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -521,13 +690,16 @@ const Admin = () => {
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {carsForSale.map((car) => (
                       <div key={car.id} className={`border rounded-lg overflow-hidden ${car.is_sold ? "opacity-60" : ""}`}>
-                        <div className="h-32 bg-muted">
+                        <div className="h-32 bg-muted relative">
                           {car.images && car.images[0] ? (
                             <img src={car.images[0]} alt={`${car.brand} ${car.model}`} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
                               <Car className="h-8 w-8 text-muted-foreground/50" />
                             </div>
+                          )}
+                          {car.is_sold && (
+                            <Badge className="absolute top-2 right-2 bg-destructive">Verkauft</Badge>
                           )}
                         </div>
                         <div className="p-4">
@@ -536,13 +708,16 @@ const Admin = () => {
                           <p className="text-sm text-muted-foreground">
                             EZ {car.year} • {car.mileage.toLocaleString("de-DE")} km
                           </p>
-                          <div className="flex gap-2 mt-4">
+                          <div className="flex flex-wrap gap-2 mt-4">
+                            <Button size="sm" variant="outline" onClick={() => openEditDialog(car)}>
+                              <Pencil className="h-4 w-4" />
+                            </Button>
                             <Button
                               size="sm"
                               variant={car.is_sold ? "outline" : "default"}
                               onClick={() => toggleCarSold.mutate({ id: car.id, is_sold: !car.is_sold })}
                             >
-                              {car.is_sold ? "Wieder verfügbar" : "Als verkauft markieren"}
+                              {car.is_sold ? "Verfügbar" : "Verkauft"}
                             </Button>
                             <Button size="sm" variant="destructive" onClick={() => deleteCar.mutate(car.id)}>
                               <Trash2 className="h-4 w-4" />
@@ -571,7 +746,7 @@ const Admin = () => {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Marke *</Label>
-                <Select onValueChange={(v) => setNewCarData({ ...newCarData, brand: v })}>
+                <Select value={newCarData.brand} onValueChange={(v) => setNewCarData({ ...newCarData, brand: v })}>
                   <SelectTrigger><SelectValue placeholder="Marke wählen" /></SelectTrigger>
                   <SelectContent>
                     {carBrands.map((brand) => (
@@ -594,7 +769,7 @@ const Admin = () => {
               </div>
               <div className="space-y-2">
                 <Label>Kraftstoff *</Label>
-                <Select onValueChange={(v) => setNewCarData({ ...newCarData, fuel_type: v })}>
+                <Select value={newCarData.fuel_type} onValueChange={(v) => setNewCarData({ ...newCarData, fuel_type: v })}>
                   <SelectTrigger><SelectValue placeholder="Kraftstoff wählen" /></SelectTrigger>
                   <SelectContent>
                     {fuelTypes.map((fuel) => (
@@ -605,7 +780,7 @@ const Admin = () => {
               </div>
               <div className="space-y-2">
                 <Label>Getriebe *</Label>
-                <Select onValueChange={(v) => setNewCarData({ ...newCarData, transmission: v })}>
+                <Select value={newCarData.transmission} onValueChange={(v) => setNewCarData({ ...newCarData, transmission: v })}>
                   <SelectTrigger><SelectValue placeholder="Getriebe wählen" /></SelectTrigger>
                   <SelectContent>
                     {transmissions.map((trans) => (
@@ -692,6 +867,231 @@ const Admin = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Edit Car Dialog */}
+      <Dialog open={isEditCarOpen} onOpenChange={setIsEditCarOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Fahrzeug bearbeiten</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Marke *</Label>
+                <Select value={editCarData.brand} onValueChange={(v) => setEditCarData({ ...editCarData, brand: v })}>
+                  <SelectTrigger><SelectValue placeholder="Marke wählen" /></SelectTrigger>
+                  <SelectContent>
+                    {carBrands.map((brand) => (
+                      <SelectItem key={brand} value={brand}>{brand}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Modell *</Label>
+                <Input value={editCarData.model} onChange={(e) => setEditCarData({ ...editCarData, model: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Baujahr *</Label>
+                <Input type="number" value={editCarData.year} onChange={(e) => setEditCarData({ ...editCarData, year: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Kilometerstand *</Label>
+                <Input type="number" value={editCarData.mileage} onChange={(e) => setEditCarData({ ...editCarData, mileage: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Kraftstoff *</Label>
+                <Select value={editCarData.fuel_type} onValueChange={(v) => setEditCarData({ ...editCarData, fuel_type: v })}>
+                  <SelectTrigger><SelectValue placeholder="Kraftstoff wählen" /></SelectTrigger>
+                  <SelectContent>
+                    {fuelTypes.map((fuel) => (
+                      <SelectItem key={fuel} value={fuel}>{fuel}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Getriebe *</Label>
+                <Select value={editCarData.transmission} onValueChange={(v) => setEditCarData({ ...editCarData, transmission: v })}>
+                  <SelectTrigger><SelectValue placeholder="Getriebe wählen" /></SelectTrigger>
+                  <SelectContent>
+                    {transmissions.map((trans) => (
+                      <SelectItem key={trans} value={trans}>{trans}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Preis (€) *</Label>
+                <Input type="number" value={editCarData.price} onChange={(e) => setEditCarData({ ...editCarData, price: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Leistung (PS)</Label>
+                <Input type="number" value={editCarData.power_hp} onChange={(e) => setEditCarData({ ...editCarData, power_hp: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Farbe</Label>
+                <Input value={editCarData.color} onChange={(e) => setEditCarData({ ...editCarData, color: e.target.value })} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Ausstattung (kommagetrennt)</Label>
+              <Input
+                value={editCarData.features}
+                onChange={(e) => setEditCarData({ ...editCarData, features: e.target.value })}
+                placeholder="z.B. Klimaanlage, Navigationssystem, Ledersitze"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Beschreibung</Label>
+              <Textarea
+                value={editCarData.description}
+                onChange={(e) => setEditCarData({ ...editCarData, description: e.target.value })}
+                rows={3}
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="edit-featured"
+                checked={editCarData.is_featured}
+                onCheckedChange={(c) => setEditCarData({ ...editCarData, is_featured: !!c })}
+              />
+              <Label htmlFor="edit-featured">Als Empfohlen markieren</Label>
+            </div>
+            <div className="space-y-2">
+              <Label>Vorhandene Bilder</Label>
+              <div className="grid grid-cols-4 gap-2">
+                {editCarData.existingImages.map((img, idx) => (
+                  <div key={idx} className="relative aspect-square bg-muted rounded overflow-hidden">
+                    <img src={img} alt="" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setEditCarData({
+                        ...editCarData,
+                        existingImages: editCarData.existingImages.filter((_, i) => i !== idx)
+                      })}
+                      className="absolute top-1 right-1 bg-destructive text-destructive-foreground p-1 rounded-full"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Neue Bilder hinzufügen</Label>
+              <div className="grid grid-cols-4 gap-2">
+                {editCarImages.map((img, idx) => (
+                  <div key={idx} className="relative aspect-square bg-muted rounded overflow-hidden">
+                    <img src={URL.createObjectURL(img)} alt="" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setEditCarImages(editCarImages.filter((_, i) => i !== idx))}
+                      className="absolute top-1 right-1 bg-destructive text-destructive-foreground p-1 rounded-full"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+                {(editCarData.existingImages.length + editCarImages.length) < 10 && (
+                  <label className="aspect-square border-2 border-dashed rounded flex flex-col items-center justify-center cursor-pointer hover:border-primary">
+                    <Upload className="h-6 w-6 text-muted-foreground" />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={(e) => {
+                        if (e.target.files) {
+                          const remaining = 10 - editCarData.existingImages.length - editCarImages.length;
+                          setEditCarImages([...editCarImages, ...Array.from(e.target.files).slice(0, remaining)]);
+                        }
+                      }}
+                      className="hidden"
+                    />
+                  </label>
+                )}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditCarOpen(false)}>Abbrechen</Button>
+            <Button onClick={handleEditCar}>Speichern</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Car Inquiry Notes Dialog */}
+      <Dialog open={!!selectedInquiry} onOpenChange={() => setSelectedInquiry(null)}>
+        <DialogContent>
+          {selectedInquiry && (
+            <>
+              <DialogHeader>
+                <DialogTitle>Notizen - {selectedInquiry.car_brand} {selectedInquiry.car_model}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Kunde: {selectedInquiry.customer_name} • {selectedInquiry.customer_email}
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label>Notizen</Label>
+                  <Textarea
+                    value={selectedInquiry.notes || ""}
+                    onChange={(e) => setSelectedInquiry({ ...selectedInquiry, notes: e.target.value })}
+                    placeholder="Notizen zur Anfrage..."
+                    rows={5}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setSelectedInquiry(null)}>Schließen</Button>
+                <Button onClick={() => {
+                  updateCarInquiryNotes.mutate({ id: selectedInquiry.id, notes: selectedInquiry.notes || "" });
+                  setSelectedInquiry(null);
+                }}>Speichern</Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Contact Notes Dialog */}
+      <Dialog open={!!selectedContact} onOpenChange={() => setSelectedContact(null)}>
+        <DialogContent>
+          {selectedContact && (
+            <>
+              <DialogHeader>
+                <DialogTitle>Notizen - {selectedContact.name}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    {selectedContact.email} {selectedContact.phone && `• ${selectedContact.phone}`}
+                  </p>
+                  <p className="text-sm">{selectedContact.message}</p>
+                </div>
+                <div className="space-y-2">
+                  <Label>Notizen</Label>
+                  <Textarea
+                    value={selectedContact.notes || ""}
+                    onChange={(e) => setSelectedContact({ ...selectedContact, notes: e.target.value })}
+                    placeholder="Notizen zur Anfrage..."
+                    rows={5}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setSelectedContact(null)}>Schließen</Button>
+                <Button onClick={() => {
+                  updateContactNotes.mutate({ id: selectedContact.id, notes: selectedContact.notes || "" });
+                  setSelectedContact(null);
+                }}>Speichern</Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Sell Request Detail Dialog */}
       <Dialog open={!!selectedSellRequest} onOpenChange={() => setSelectedSellRequest(null)}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -773,6 +1173,25 @@ const Admin = () => {
                       <SelectItem value="completed">Abgeschlossen</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Notizen</Label>
+                  <Textarea
+                    value={selectedSellRequest.notes || ""}
+                    onChange={(e) => setSelectedSellRequest({ ...selectedSellRequest, notes: e.target.value })}
+                    placeholder="Notizen zur Anfrage..."
+                    rows={4}
+                  />
+                  <Button 
+                    size="sm" 
+                    onClick={() => updateSellRequestNotes.mutate({ 
+                      id: selectedSellRequest.id, 
+                      notes: selectedSellRequest.notes || "" 
+                    })}
+                  >
+                    Notizen speichern
+                  </Button>
                 </div>
               </div>
             </>
