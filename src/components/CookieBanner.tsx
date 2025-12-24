@@ -7,6 +7,13 @@ const COOKIE_CONSENT_KEY = "ultrix_cookie_consent";
 
 type ConsentStatus = "accepted" | "declined" | null;
 
+// Custom event for reopening the banner
+const REOPEN_EVENT = "ultrix_reopen_cookie_banner";
+
+export const reopenCookieBanner = () => {
+  window.dispatchEvent(new CustomEvent(REOPEN_EVENT));
+};
+
 const CookieBanner = () => {
   const [consentStatus, setConsentStatus] = useState<ConsentStatus>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -22,6 +29,16 @@ const CookieBanner = () => {
     }
   }, []);
 
+  // Listen for reopen event
+  useEffect(() => {
+    const handleReopen = () => {
+      setIsVisible(true);
+    };
+
+    window.addEventListener(REOPEN_EVENT, handleReopen);
+    return () => window.removeEventListener(REOPEN_EVENT, handleReopen);
+  }, []);
+
   const handleAccept = () => {
     localStorage.setItem(COOKIE_CONSENT_KEY, "accepted");
     setConsentStatus("accepted");
@@ -34,8 +51,8 @@ const CookieBanner = () => {
     setIsVisible(false);
   };
 
-  // Don't render if consent already given
-  if (consentStatus !== null || !isVisible) {
+  // Don't render if not visible
+  if (!isVisible) {
     return null;
   }
 

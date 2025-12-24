@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Phone, Mail, MapPin } from "lucide-react";
+import { reopenCookieBanner } from "@/components/CookieBanner";
 
 const Footer = () => {
   return (
@@ -49,6 +50,12 @@ const Footer = () => {
               <Link to="/datenschutz" className="block hover:opacity-80 transition-opacity">
                 Datenschutz
               </Link>
+              <button 
+                onClick={reopenCookieBanner}
+                className="block hover:opacity-80 transition-opacity text-left"
+              >
+                Cookie-Einstellungen
+              </button>
             </div>
           </div>
         </div>
