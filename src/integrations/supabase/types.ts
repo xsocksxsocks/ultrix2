@@ -153,6 +153,7 @@ export type Database = {
           id: string
           images: string[]
           is_featured: boolean | null
+          is_reserved: boolean | null
           is_sold: boolean | null
           mileage: number
           model: string
@@ -172,6 +173,7 @@ export type Database = {
           id?: string
           images: string[]
           is_featured?: boolean | null
+          is_reserved?: boolean | null
           is_sold?: boolean | null
           mileage: number
           model: string
@@ -191,6 +193,7 @@ export type Database = {
           id?: string
           images?: string[]
           is_featured?: boolean | null
+          is_reserved?: boolean | null
           is_sold?: boolean | null
           mileage?: number
           model?: string
