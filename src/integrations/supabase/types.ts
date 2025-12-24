@@ -28,6 +28,7 @@ export type Database = {
           id: string
           is_read: boolean | null
           message: string | null
+          notes: string | null
         }
         Insert: {
           car_brand: string
@@ -42,6 +43,7 @@ export type Database = {
           id?: string
           is_read?: boolean | null
           message?: string | null
+          notes?: string | null
         }
         Update: {
           car_brand?: string
@@ -56,6 +58,7 @@ export type Database = {
           id?: string
           is_read?: boolean | null
           message?: string | null
+          notes?: string | null
         }
         Relationships: [
           {
@@ -83,6 +86,7 @@ export type Database = {
           is_read: boolean | null
           mileage: number
           model: string
+          notes: string | null
           status: string | null
           transmission: string
           year: number
@@ -102,6 +106,7 @@ export type Database = {
           is_read?: boolean | null
           mileage: number
           model: string
+          notes?: string | null
           status?: string | null
           transmission: string
           year: number
@@ -121,6 +126,7 @@ export type Database = {
           is_read?: boolean | null
           mileage?: number
           model?: string
+          notes?: string | null
           status?: string | null
           transmission?: string
           year?: number
@@ -195,6 +201,7 @@ export type Database = {
           is_read: boolean | null
           message: string
           name: string
+          notes: string | null
           phone: string | null
         }
         Insert: {
@@ -204,6 +211,7 @@ export type Database = {
           is_read?: boolean | null
           message: string
           name: string
+          notes?: string | null
           phone?: string | null
         }
         Update: {
@@ -213,6 +221,7 @@ export type Database = {
           is_read?: boolean | null
           message?: string
           name?: string
+          notes?: string | null
           phone?: string | null
         }
         Relationships: []

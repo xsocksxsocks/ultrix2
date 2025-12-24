@@ -36,7 +36,7 @@ const Fahrzeuge = () => {
       const { data, error } = await supabase
         .from("cars_for_sale")
         .select("*")
-        .eq("is_sold", false)
+        .order("is_sold", { ascending: true })
         .order("is_featured", { ascending: false })
         .order("created_at", { ascending: false });
 
@@ -87,7 +87,11 @@ const Fahrzeuge = () => {
           ) : cars && cars.length > 0 ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {cars.map((car) => (
-                <Card key={car.id} className="card-hover overflow-hidden border-border cursor-pointer" onClick={() => setSelectedCar(car)}>
+                <Card 
+                  key={car.id} 
+                  className={`card-hover overflow-hidden border-border ${car.is_sold ? "opacity-60 grayscale" : "cursor-pointer"}`} 
+                  onClick={() => !car.is_sold && setSelectedCar(car)}
+                >
                   <div className="relative h-48 bg-muted">
                     {car.images && car.images[0] ? (
                       <img
@@ -100,9 +104,14 @@ const Fahrzeuge = () => {
                         <Car className="h-16 w-16 text-muted-foreground/50" />
                       </div>
                     )}
-                    {car.is_featured && (
+                    {car.is_featured && !car.is_sold && (
                       <Badge className="absolute top-3 left-3 bg-accent text-accent-foreground">
                         Empfohlen
+                      </Badge>
+                    )}
+                    {car.is_sold && (
+                      <Badge className="absolute top-3 left-3 bg-destructive text-destructive-foreground">
+                        Verkauft
                       </Badge>
                     )}
                   </div>
