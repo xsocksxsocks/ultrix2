@@ -278,7 +278,7 @@ const Index = () => {
             <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold">
               <Link to="/verkaufen">Termin vereinbaren</Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10">
+            <Button asChild size="lg" className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-semibold">
               <Link to="/kontakt">
                 <Phone className="h-5 w-5 mr-2" />
                 06204 / XXXXXX
