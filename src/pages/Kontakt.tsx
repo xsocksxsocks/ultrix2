@@ -205,6 +205,37 @@ const Kontakt = () => {
           </div>
         </div>
       </section>
+
+      {/* Map Section */}
+      <section className="pb-16 md:pb-24">
+        <div className="section-container">
+          <h2 className="font-heading text-2xl font-bold mb-6 text-center">Standort</h2>
+          <div className="rounded-lg overflow-hidden border border-border shadow-md">
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2597.1234567890!2d8.5777!3d49.5405!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4797c9c1234567890%3A0x1234567890abcdef!2sWeihgartenstra%C3%9Fe%2019%2C%2068519%20Viernheim%2C%20Germany!5e0!3m2!1sde!2sde!4v1703000000000!5m2!1sde!2sde"
+              width="100%"
+              height="400"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="ULTRIX UG Standort - Weihgartenstr. 19, 68519 Viernheim"
+              className="w-full"
+            />
+          </div>
+          <div className="text-center mt-4">
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=Weihgartenstr.+19,+68519+Viernheim"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline inline-flex items-center gap-2"
+            >
+              <MapPin className="h-4 w-4" />
+              In Google Maps öffnen
+            </a>
+          </div>
+        </div>
+      </section>
     </Layout>
   );
 };
