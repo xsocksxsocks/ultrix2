@@ -24,6 +24,7 @@ interface CarForSale {
   features: string[] | null;
   images: string[];
   is_sold: boolean;
+  is_reserved: boolean;
   is_featured: boolean;
 }
 
@@ -141,8 +142,8 @@ const Fahrzeuge = () => {
               {cars.map((car) => (
                 <Card 
                   key={car.id} 
-                  className={`card-hover overflow-hidden border-border ${car.is_sold ? "opacity-60 grayscale" : "cursor-pointer"}`} 
-                  onClick={() => !car.is_sold && setSelectedCar(car)}
+                  className={`card-hover overflow-hidden border-border ${car.is_sold ? "opacity-60 grayscale" : car.is_reserved ? "opacity-80" : "cursor-pointer"}`} 
+                  onClick={() => !car.is_sold && !car.is_reserved && setSelectedCar(car)}
                 >
                   <div className="relative aspect-[16/10] bg-muted">
                     {car.images && car.images[0] ? (
@@ -156,7 +157,7 @@ const Fahrzeuge = () => {
                         <Car className="h-16 w-16 text-muted-foreground/50" />
                       </div>
                     )}
-                    {car.is_featured && !car.is_sold && (
+                    {car.is_featured && !car.is_sold && !car.is_reserved && (
                       <Badge className="absolute top-3 left-3 bg-accent text-accent-foreground">
                         Empfohlen
                       </Badge>
@@ -164,6 +165,11 @@ const Fahrzeuge = () => {
                     {car.is_sold && (
                       <Badge className="absolute top-3 left-3 bg-destructive text-destructive-foreground">
                         Verkauft
+                      </Badge>
+                    )}
+                    {car.is_reserved && !car.is_sold && (
+                      <Badge className="absolute top-3 left-3 bg-amber-500 text-white">
+                        Reserviert
                       </Badge>
                     )}
                   </div>

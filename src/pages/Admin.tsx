@@ -276,7 +276,21 @@ const Admin = () => {
     mutationFn: async ({ id, is_sold }: { id: string; is_sold: boolean }) => {
       const { error } = await supabase
         .from("cars_for_sale")
-        .update({ is_sold })
+        .update({ is_sold, is_reserved: false })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-cars"] });
+      toast({ title: "Status aktualisiert" });
+    },
+  });
+
+  const toggleCarReserved = useMutation({
+    mutationFn: async ({ id, is_reserved }: { id: string; is_reserved: boolean }) => {
+      const { error } = await supabase
+        .from("cars_for_sale")
+        .update({ is_reserved, is_sold: false })
         .eq("id", id);
       if (error) throw error;
     },
@@ -699,7 +713,7 @@ const Admin = () => {
                 {carsForSale && carsForSale.length > 0 ? (
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {carsForSale.map((car) => (
-                      <div key={car.id} className={`border rounded-lg overflow-hidden ${car.is_sold ? "opacity-60" : ""}`}>
+                      <div key={car.id} className={`border rounded-lg overflow-hidden ${car.is_sold ? "opacity-60" : car.is_reserved ? "opacity-80" : ""}`}>
                         <div className="h-32 bg-muted relative">
                           {car.images && car.images[0] ? (
                             <img src={car.images[0]} alt={`${car.brand} ${car.model}`} className="w-full h-full object-cover" />
@@ -710,6 +724,9 @@ const Admin = () => {
                           )}
                           {car.is_sold && (
                             <Badge className="absolute top-2 right-2 bg-destructive">Verkauft</Badge>
+                          )}
+                          {car.is_reserved && !car.is_sold && (
+                            <Badge className="absolute top-2 right-2 bg-amber-500">Reserviert</Badge>
                           )}
                         </div>
                         <div className="p-4">
@@ -724,10 +741,18 @@ const Admin = () => {
                             </Button>
                             <Button
                               size="sm"
-                              variant={car.is_sold ? "outline" : "default"}
+                              variant={car.is_reserved ? "default" : "outline"}
+                              className={car.is_reserved ? "bg-amber-500 hover:bg-amber-600" : ""}
+                              onClick={() => toggleCarReserved.mutate({ id: car.id, is_reserved: !car.is_reserved })}
+                            >
+                              {car.is_reserved ? "Reserviert" : "Reservieren"}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant={car.is_sold ? "destructive" : "outline"}
                               onClick={() => toggleCarSold.mutate({ id: car.id, is_sold: !car.is_sold })}
                             >
-                              {car.is_sold ? "Verfügbar" : "Verkauft"}
+                              {car.is_sold ? "Verkauft" : "Verkauft"}
                             </Button>
                             <Button size="sm" variant="destructive" onClick={() => deleteCar.mutate(car.id)}>
                               <Trash2 className="h-4 w-4" />
