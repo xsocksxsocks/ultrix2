@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { LogOut, Mail, Car, HandCoins, Eye, Trash2, Plus, X, Upload, Check, ShoppingCart, Pencil, StickyNote } from "lucide-react";
+import { LogOut, Mail, Car, HandCoins, Eye, Trash2, Plus, X, Upload, Check, ShoppingCart, Pencil, StickyNote, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -958,11 +958,43 @@ const Admin = () => {
               <Label htmlFor="edit-featured">Als Empfohlen markieren</Label>
             </div>
             <div className="space-y-2">
-              <Label>Vorhandene Bilder</Label>
+              <Label>Vorhandene Bilder (klicken und ziehen oder Pfeile zum Sortieren)</Label>
+              <p className="text-xs text-muted-foreground">Das erste Bild wird als Hauptbild angezeigt</p>
               <div className="grid grid-cols-4 gap-2">
                 {editCarData.existingImages.map((img, idx) => (
-                  <div key={idx} className="relative aspect-square bg-muted rounded overflow-hidden">
+                  <div key={idx} className="relative aspect-square bg-muted rounded overflow-hidden group">
                     <img src={img} alt="" className="w-full h-full object-cover" />
+                    {idx === 0 && (
+                      <span className="absolute top-1 left-1 bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded">
+                        Hauptbild
+                      </span>
+                    )}
+                    <div className="absolute bottom-1 left-1 right-1 flex justify-between">
+                      <button
+                        type="button"
+                        disabled={idx === 0}
+                        onClick={() => {
+                          const newImages = [...editCarData.existingImages];
+                          [newImages[idx - 1], newImages[idx]] = [newImages[idx], newImages[idx - 1]];
+                          setEditCarData({ ...editCarData, existingImages: newImages });
+                        }}
+                        className="bg-background/80 text-foreground p-1 rounded disabled:opacity-30"
+                      >
+                        <ChevronLeft className="h-3 w-3" />
+                      </button>
+                      <button
+                        type="button"
+                        disabled={idx === editCarData.existingImages.length - 1}
+                        onClick={() => {
+                          const newImages = [...editCarData.existingImages];
+                          [newImages[idx], newImages[idx + 1]] = [newImages[idx + 1], newImages[idx]];
+                          setEditCarData({ ...editCarData, existingImages: newImages });
+                        }}
+                        className="bg-background/80 text-foreground p-1 rounded disabled:opacity-30"
+                      >
+                        <ChevronRight className="h-3 w-3" />
+                      </button>
+                    </div>
                     <button
                       type="button"
                       onClick={() => setEditCarData({
