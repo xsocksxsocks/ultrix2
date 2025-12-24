@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { LogOut, Mail, Car, HandCoins, Eye, Trash2, Plus, X, Upload, Check, ShoppingCart, Pencil, StickyNote, ChevronLeft, ChevronRight } from "lucide-react";
+import { LogOut, Mail, Car, HandCoins, Eye, Trash2, Plus, X, Upload, Check, ShoppingCart, Pencil, StickyNote, ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
+import AppointmentCalendar from "@/components/admin/AppointmentCalendar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -467,11 +468,15 @@ const Admin = () => {
 
       {/* Content */}
       <main className="section-container py-8">
-        <Tabs defaultValue="car-inquiries" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+        <Tabs defaultValue="calendar" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="calendar" className="relative">
+              <CalendarDays className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Termine</span>
+            </TabsTrigger>
             <TabsTrigger value="car-inquiries" className="relative">
               <ShoppingCart className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Fahrzeuganfragen</span>
+              <span className="hidden sm:inline">Kaufanfragen</span>
               {unreadCarInquiries > 0 && (
                 <Badge className="ml-2 bg-accent">{unreadCarInquiries}</Badge>
               )}
@@ -495,6 +500,11 @@ const Admin = () => {
               <span className="hidden sm:inline">Fahrzeuge</span>
             </TabsTrigger>
           </TabsList>
+
+          {/* Appointment Calendar */}
+          <TabsContent value="calendar">
+            <AppointmentCalendar />
+          </TabsContent>
 
           {/* Car Inquiries */}
           <TabsContent value="car-inquiries">

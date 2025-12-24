@@ -112,14 +112,7 @@ const Verkaufen = () => {
         imageUrls.push(urlData.publicUrl);
       }
 
-      // Build description with appointment info
-      let fullDescription = validatedData.description || "";
-      if (appointmentDate) {
-        const appointmentInfo = `\n\n--- Wunschtermin ---\nDatum: ${format(appointmentDate, "dd.MM.yyyy", { locale: de })}${appointmentTime ? `\nUhrzeit: ${appointmentTime} Uhr` : ""}`;
-        fullDescription += appointmentInfo;
-      }
-
-      // Insert sell request
+      // Insert sell request with appointment data
       const { error } = await supabase.from("car_sell_requests").insert({
         customer_name: validatedData.customer_name,
         customer_email: validatedData.customer_email,
@@ -131,9 +124,12 @@ const Verkaufen = () => {
         fuel_type: validatedData.fuel_type,
         transmission: validatedData.transmission,
         color: validatedData.color || null,
-        description: fullDescription || null,
+        description: validatedData.description || null,
         asking_price: validatedData.asking_price || null,
         images: imageUrls,
+        appointment_date: appointmentDate ? format(appointmentDate, "yyyy-MM-dd") : null,
+        appointment_time: appointmentTime || null,
+        appointment_confirmed: false,
       });
 
       if (error) throw error;
