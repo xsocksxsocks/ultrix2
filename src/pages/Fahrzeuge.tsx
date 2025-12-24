@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { Car, Fuel, Calendar, Gauge, Settings2, ShieldCheck, Info } from "lucide-react";
+import { Car, Fuel, Calendar, Gauge, Settings2, ShieldCheck, CheckCircle, Award, FileCheck, Handshake } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -74,7 +74,7 @@ const Fahrzeuge = () => {
       {/* Info Banner */}
       <section className="py-8 bg-secondary border-b border-border">
         <div className="section-container">
-          <div className="flex items-start gap-4 bg-card p-6 rounded-lg border border-border">
+          <div className="flex items-start gap-4 bg-card p-6 rounded-lg border border-border mb-6">
             <div className="bg-primary/10 p-3 rounded-full flex-shrink-0">
               <ShieldCheck className="h-6 w-6 text-primary" />
             </div>
@@ -85,6 +85,38 @@ const Fahrzeuge = () => {
                 unsere umfassende technische Prüfung. Den Fahrzeugzustand garantieren wir Ihnen 
                 vertraglich – ohne versteckte Kosten oder zusätzliche Gebühren für Sie als Käufer.
               </p>
+            </div>
+          </div>
+
+          {/* Trust Badges */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-card p-4 rounded-lg border border-border text-center">
+              <div className="bg-accent/10 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                <FileCheck className="h-6 w-6 text-accent" />
+              </div>
+              <p className="font-semibold text-sm">Technisch geprüft</p>
+              <p className="text-xs text-muted-foreground mt-1">Umfassende Inspektion</p>
+            </div>
+            <div className="bg-card p-4 rounded-lg border border-border text-center">
+              <div className="bg-accent/10 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Award className="h-6 w-6 text-accent" />
+              </div>
+              <p className="font-semibold text-sm">Zustandsgarantie</p>
+              <p className="text-xs text-muted-foreground mt-1">Vertraglich gesichert</p>
+            </div>
+            <div className="bg-card p-4 rounded-lg border border-border text-center">
+              <div className="bg-accent/10 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Handshake className="h-6 w-6 text-accent" />
+              </div>
+              <p className="font-semibold text-sm">Keine Zusatzkosten</p>
+              <p className="text-xs text-muted-foreground mt-1">Faire Preise</p>
+            </div>
+            <div className="bg-card p-4 rounded-lg border border-border text-center">
+              <div className="bg-accent/10 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                <CheckCircle className="h-6 w-6 text-accent" />
+              </div>
+              <p className="font-semibold text-sm">Geprüfte Historie</p>
+              <p className="text-xs text-muted-foreground mt-1">Transparente Herkunft</p>
             </div>
           </div>
         </div>
