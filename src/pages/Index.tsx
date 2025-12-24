@@ -3,6 +3,7 @@ import { Car, HandCoins, Users, Building2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Layout from "@/components/layout/Layout";
+import heroImage from "@/assets/hero-dealership.jpg";
 
 const Index = () => {
   const services = [
@@ -33,9 +34,20 @@ const Index = () => {
   return (
     <Layout>
       {/* Hero Section */}
-      <section className="gradient-navy text-primary-foreground py-20 md:py-32">
-        <div className="section-container">
-          <div className="max-w-3xl">
+      <section className="relative min-h-[600px] md:min-h-[700px] flex items-center">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src={heroImage}
+            alt="ULTRIX Autohaus Showroom"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/80 to-primary/40" />
+        </div>
+        
+        {/* Content */}
+        <div className="section-container relative z-10">
+          <div className="max-w-2xl text-primary-foreground">
             <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
               Ihr Partner für Fahrzeughandel in Viernheim
             </h1>
