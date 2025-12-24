@@ -92,12 +92,12 @@ const Fahrzeuge = () => {
                   className={`card-hover overflow-hidden border-border ${car.is_sold ? "opacity-60 grayscale" : "cursor-pointer"}`} 
                   onClick={() => !car.is_sold && setSelectedCar(car)}
                 >
-                  <div className="relative h-48 bg-muted">
+                  <div className="relative aspect-[16/10] bg-muted">
                     {car.images && car.images[0] ? (
                       <img
                         src={car.images[0]}
                         alt={`${car.brand} ${car.model}`}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
@@ -175,7 +175,7 @@ const Fahrzeuge = () => {
                       key={idx}
                       src={img}
                       alt={`${selectedCar.brand} ${selectedCar.model} - Bild ${idx + 1}`}
-                      className="w-full h-40 object-cover rounded-lg"
+                      className="w-full h-48 object-contain bg-muted rounded-lg"
                     />
                   ))}
                 </div>
