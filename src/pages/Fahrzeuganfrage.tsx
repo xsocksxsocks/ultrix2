@@ -193,11 +193,11 @@ const Fahrzeuganfrage = () => {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {car.images && car.images[0] && (
-                    <div className="relative h-64 bg-muted rounded-lg overflow-hidden">
+                    <div className="relative aspect-[16/10] bg-muted rounded-lg overflow-hidden">
                       <img
                         src={car.images[0]}
                         alt={`${car.brand} ${car.model}`}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                       />
                     </div>
                   )}
