@@ -31,7 +31,6 @@ const Header = () => {
               <span className="hidden sm:inline">kontakt@ultrix-kfz.net</span>
             </a>
           </div>
-          <span className="text-xs opacity-80">Viernheim</span>
         </div>
       </div>
 

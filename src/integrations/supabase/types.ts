@@ -14,6 +14,59 @@ export type Database = {
   }
   public: {
     Tables: {
+      car_inquiries: {
+        Row: {
+          car_brand: string
+          car_id: string
+          car_model: string
+          car_price: number
+          car_year: number
+          created_at: string
+          customer_email: string
+          customer_name: string
+          customer_phone: string
+          id: string
+          is_read: boolean | null
+          message: string | null
+        }
+        Insert: {
+          car_brand: string
+          car_id: string
+          car_model: string
+          car_price: number
+          car_year: number
+          created_at?: string
+          customer_email: string
+          customer_name: string
+          customer_phone: string
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+        }
+        Update: {
+          car_brand?: string
+          car_id?: string
+          car_model?: string
+          car_price?: number
+          car_year?: number
+          created_at?: string
+          customer_email?: string
+          customer_name?: string
+          customer_phone?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "car_inquiries_car_id_fkey"
+            columns: ["car_id"]
+            isOneToOne: false
+            referencedRelation: "cars_for_sale"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       car_sell_requests: {
         Row: {
           asking_price: number | null

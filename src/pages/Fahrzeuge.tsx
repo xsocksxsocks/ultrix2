@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { Car, Fuel, Calendar, Gauge, Settings2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/layout/Layout";
-
 interface CarForSale {
   id: string;
   brand: string;
@@ -28,6 +28,7 @@ interface CarForSale {
 
 const Fahrzeuge = () => {
   const [selectedCar, setSelectedCar] = useState<CarForSale | null>(null);
+  const navigate = useNavigate();
 
   const { data: cars, isLoading } = useQuery({
     queryKey: ["cars-for-sale"],
@@ -225,10 +226,14 @@ const Fahrzeuge = () => {
                   </div>
                 )}
 
-                <Button asChild className="w-full">
-                  <a href={`mailto:kontakt@ultrix-kfz.net?subject=Anfrage: ${selectedCar.brand} ${selectedCar.model}`}>
-                    Anfrage senden
-                  </a>
+                <Button 
+                  className="w-full" 
+                  onClick={() => {
+                    setSelectedCar(null);
+                    navigate(`/fahrzeuganfrage?car=${selectedCar.id}`);
+                  }}
+                >
+                  Anfrage senden
                 </Button>
               </div>
             </>
