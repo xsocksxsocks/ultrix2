@@ -72,6 +72,9 @@ export type Database = {
       }
       car_sell_requests: {
         Row: {
+          appointment_confirmed: boolean | null
+          appointment_date: string | null
+          appointment_time: string | null
           asking_price: number | null
           brand: string
           color: string | null
@@ -92,6 +95,9 @@ export type Database = {
           year: number
         }
         Insert: {
+          appointment_confirmed?: boolean | null
+          appointment_date?: string | null
+          appointment_time?: string | null
           asking_price?: number | null
           brand: string
           color?: string | null
@@ -112,6 +118,9 @@ export type Database = {
           year: number
         }
         Update: {
+          appointment_confirmed?: boolean | null
+          appointment_date?: string | null
+          appointment_time?: string | null
           asking_price?: number | null
           brand?: string
           color?: string | null
