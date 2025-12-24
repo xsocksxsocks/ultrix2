@@ -55,7 +55,6 @@ const Footer = () => {
 
         <div className="border-t border-primary-foreground/20 mt-8 pt-8 text-center text-sm text-primary-foreground/60">
           <p>&copy; {new Date().getFullYear()} ULTRIX UG. Alle Rechte vorbehalten.</p>
-          <p className="mt-1">Inhaber: Nikolaus Bauer</p>
         </div>
       </div>
     </footer>

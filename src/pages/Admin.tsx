@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { LogOut, Mail, Car, HandCoins, Eye, Trash2, Plus, X, Upload, Check } from "lucide-react";
+import { LogOut, Mail, Car, HandCoins, Eye, Trash2, Plus, X, Upload, Check, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -94,6 +94,18 @@ const Admin = () => {
     },
   });
 
+  const { data: carInquiries } = useQuery({
+    queryKey: ["admin-car-inquiries"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("car_inquiries")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const { data: carsForSale } = useQuery({
     queryKey: ["admin-cars"],
     queryFn: async () => {
@@ -138,6 +150,28 @@ const Admin = () => {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-sell-requests"] }),
+  });
+
+  const markCarInquiryRead = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("car_inquiries")
+        .update({ is_read: true })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-car-inquiries"] }),
+  });
+
+  const deleteCarInquiry = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("car_inquiries").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-car-inquiries"] });
+      toast({ title: "Anfrage gelöscht" });
+    },
   });
 
   const updateSellRequestStatus = useMutation({
@@ -269,6 +303,7 @@ const Admin = () => {
 
   const unreadContacts = contactRequests?.filter(c => !c.is_read).length || 0;
   const unreadSellRequests = sellRequests?.filter(s => !s.is_read).length || 0;
+  const unreadCarInquiries = carInquiries?.filter(i => !i.is_read).length || 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -290,18 +325,25 @@ const Admin = () => {
 
       {/* Content */}
       <main className="section-container py-8">
-        <Tabs defaultValue="contacts" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+        <Tabs defaultValue="car-inquiries" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="car-inquiries" className="relative">
+              <ShoppingCart className="h-4 w-4 mr-2" />
+              Fahrzeuganfragen
+              {unreadCarInquiries > 0 && (
+                <Badge className="ml-2 bg-accent">{unreadCarInquiries}</Badge>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="contacts" className="relative">
               <Mail className="h-4 w-4 mr-2" />
-              Kontaktanfragen
+              Kontakt
               {unreadContacts > 0 && (
                 <Badge className="ml-2 bg-accent">{unreadContacts}</Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="sell-requests" className="relative">
               <HandCoins className="h-4 w-4 mr-2" />
-              Verkaufsanfragen
+              Verkauf
               {unreadSellRequests > 0 && (
                 <Badge className="ml-2 bg-accent">{unreadSellRequests}</Badge>
               )}
@@ -311,6 +353,56 @@ const Admin = () => {
               Fahrzeuge
             </TabsTrigger>
           </TabsList>
+
+          {/* Car Inquiries */}
+          <TabsContent value="car-inquiries">
+            <Card>
+              <CardHeader>
+                <CardTitle>Fahrzeuganfragen</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {carInquiries && carInquiries.length > 0 ? (
+                  <div className="space-y-4">
+                    {carInquiries.map((inquiry) => (
+                      <div
+                        key={inquiry.id}
+                        className={`p-4 border rounded-lg ${!inquiry.is_read ? "bg-accent/10 border-accent" : "border-border"}`}
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="font-semibold">{inquiry.car_brand} {inquiry.car_model} ({inquiry.car_year})</span>
+                              {!inquiry.is_read && <Badge variant="secondary">Neu</Badge>}
+                            </div>
+                            <p className="text-sm font-medium text-primary mb-1">{formatPrice(inquiry.car_price)}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {inquiry.customer_name} • {inquiry.customer_email} • {inquiry.customer_phone}
+                            </p>
+                            {inquiry.message && (
+                              <p className="mt-2 text-sm">{inquiry.message}</p>
+                            )}
+                            <p className="text-xs text-muted-foreground mt-2">{formatDate(inquiry.created_at)}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            {!inquiry.is_read && (
+                              <Button size="sm" variant="outline" onClick={() => markCarInquiryRead.mutate(inquiry.id)}>
+                                <Check className="h-4 w-4" />
+                              </Button>
+                            )}
+                            <Button size="sm" variant="destructive" onClick={() => deleteCarInquiry.mutate(inquiry.id)}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-center py-8">Keine Fahrzeuganfragen vorhanden.</p>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           {/* Contact Requests */}
           <TabsContent value="contacts">
