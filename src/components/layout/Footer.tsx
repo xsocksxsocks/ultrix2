@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Phone, Mail, MapPin } from "lucide-react";
 import { reopenCookieBanner } from "@/components/CookieBanner";
-
+import ultrixLogo from "@/assets/ultrix-logo.png";
 const Footer = () => {
   return (
     <footer className="bg-primary text-primary-foreground">
@@ -9,9 +9,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Company Info */}
           <div>
-            <div className="bg-primary-foreground text-primary px-3 py-2 rounded inline-block mb-4">
-              <span className="font-heading font-bold text-xl tracking-tight">ULTRIX</span>
-            </div>
+            <img src={ultrixLogo} alt="ULTRIX Logo" className="h-10 mb-4 brightness-0 invert" />
             <p className="text-primary-foreground/80 text-sm leading-relaxed">
               Ihr zuverlässiger Partner für den Kauf und Verkauf von Qualitätsfahrzeugen. 
               Wir bedienen sowohl Privat- als auch Geschäftskunden.
