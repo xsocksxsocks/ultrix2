@@ -38,9 +38,8 @@ const Header = () => {
       <nav className="section-container py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
+          <Link to="/">
             <img src={ultrixLogo} alt="ULTRIX Logo" className="h-10" />
-            <span className="text-muted-foreground text-sm hidden sm:block">Kfz-Handel</span>
           </Link>
 
           {/* Desktop Navigation */}
