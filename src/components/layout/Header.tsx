@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Phone, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
+import ultrixLogo from "@/assets/ultrix-logo.png";
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
@@ -39,9 +39,7 @@ const Header = () => {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <div className="bg-primary text-primary-foreground px-3 py-2 rounded">
-              <span className="font-heading font-bold text-xl tracking-tight">ULTRIX</span>
-            </div>
+            <img src={ultrixLogo} alt="ULTRIX Logo" className="h-10" />
             <span className="text-muted-foreground text-sm hidden sm:block">Kfz-Handel</span>
           </Link>
 
