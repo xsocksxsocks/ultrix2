@@ -17,8 +17,9 @@ interface Appointment {
   customer_phone: string;
   brand: string;
   model: string;
-  year: number;
+  first_registration_date: string;
   mileage: number;
+  previous_owners: number | null;
   appointment_date: string | null;
   appointment_time: string | null;
   appointment_confirmed: boolean | null;
@@ -389,7 +390,8 @@ const AppointmentCalendar = () => {
                   <span>{selectedAppointment.brand} {selectedAppointment.model}</span>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  EZ {selectedAppointment.year} • {selectedAppointment.mileage.toLocaleString("de-DE")} km
+                  EZ {format(parseISO(selectedAppointment.first_registration_date), "MM/yyyy")} • {selectedAppointment.mileage.toLocaleString("de-DE")} km
+                  {selectedAppointment.previous_owners !== null && ` • ${selectedAppointment.previous_owners} Vorbesitzer`}
                 </p>
               </div>
 

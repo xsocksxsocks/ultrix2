@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Car, Calendar, Gauge, Fuel, Settings2, ArrowLeft } from "lucide-react";
+import { format } from "date-fns";
+import { de } from "date-fns/locale";
+import { Car, Calendar, Gauge, Fuel, Settings2, ArrowLeft, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,12 +18,13 @@ interface CarForSale {
   id: string;
   brand: string;
   model: string;
-  year: number;
+  first_registration_date: string;
   mileage: number;
   fuel_type: string;
   transmission: string;
   color: string | null;
   power_hp: number | null;
+  previous_owners: number | null;
   price: number;
   description: string | null;
   features: string[] | null;
@@ -105,7 +108,7 @@ const Fahrzeuganfrage = () => {
         car_id: car.id,
         car_brand: car.brand,
         car_model: car.model,
-        car_year: car.year,
+        car_first_registration_date: car.first_registration_date,
         car_price: car.price,
         customer_name: formData.name,
         customer_email: formData.email,
@@ -209,7 +212,7 @@ const Fahrzeuganfrage = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Calendar className="h-4 w-4" />
-                      <span>EZ {car.year}</span>
+                      <span>EZ {format(new Date(car.first_registration_date), "MM/yyyy")}</span>
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Gauge className="h-4 w-4" />
@@ -223,6 +226,12 @@ const Fahrzeuganfrage = () => {
                       <Settings2 className="h-4 w-4" />
                       <span>{car.transmission}</span>
                     </div>
+                    {car.previous_owners !== null && (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Users className="h-4 w-4" />
+                        <span>{car.previous_owners} Vorbesitzer</span>
+                      </div>
+                    )}
                   </div>
 
                   {car.description && (
