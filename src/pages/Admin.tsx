@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
 import { LogOut, Mail, Car, HandCoins, Eye, Trash2, Plus, X, Upload, Check, ShoppingCart, Pencil, StickyNote, ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import AppointmentCalendar from "@/components/admin/AppointmentCalendar";
 import { Button } from "@/components/ui/button";
@@ -31,10 +32,11 @@ const Admin = () => {
   const [newCarData, setNewCarData] = useState({
     brand: "",
     model: "",
-    year: "",
+    first_registration_date: "",
     mileage: "",
     fuel_type: "",
     transmission: "",
+    previous_owners: "",
     color: "",
     power_hp: "",
     price: "",
@@ -45,10 +47,11 @@ const Admin = () => {
   const [editCarData, setEditCarData] = useState({
     brand: "",
     model: "",
-    year: "",
+    first_registration_date: "",
     mileage: "",
     fuel_type: "",
     transmission: "",
+    previous_owners: "",
     color: "",
     power_hp: "",
     price: "",
@@ -331,10 +334,11 @@ const Admin = () => {
       const { error } = await supabase.from("cars_for_sale").insert({
         brand: newCarData.brand,
         model: newCarData.model,
-        year: parseInt(newCarData.year),
+        first_registration_date: newCarData.first_registration_date,
         mileage: parseInt(newCarData.mileage),
         fuel_type: newCarData.fuel_type,
         transmission: newCarData.transmission,
+        previous_owners: newCarData.previous_owners ? parseInt(newCarData.previous_owners) : null,
         color: newCarData.color || null,
         power_hp: newCarData.power_hp ? parseInt(newCarData.power_hp) : null,
         price: parseFloat(newCarData.price),
@@ -350,8 +354,8 @@ const Admin = () => {
       setIsAddCarOpen(false);
       setNewCarImages([]);
       setNewCarData({
-        brand: "", model: "", year: "", mileage: "", fuel_type: "", transmission: "",
-        color: "", power_hp: "", price: "", description: "", features: "", is_featured: false,
+        brand: "", model: "", first_registration_date: "", mileage: "", fuel_type: "", transmission: "",
+        previous_owners: "", color: "", power_hp: "", price: "", description: "", features: "", is_featured: false,
       });
       queryClient.invalidateQueries({ queryKey: ["admin-cars"] });
     } catch (error: any) {
@@ -395,10 +399,11 @@ const Admin = () => {
         .update({
           brand: editCarData.brand,
           model: editCarData.model,
-          year: parseInt(editCarData.year),
+          first_registration_date: editCarData.first_registration_date,
           mileage: parseInt(editCarData.mileage),
           fuel_type: editCarData.fuel_type,
           transmission: editCarData.transmission,
+          previous_owners: editCarData.previous_owners ? parseInt(editCarData.previous_owners) : null,
           color: editCarData.color || null,
           power_hp: editCarData.power_hp ? parseInt(editCarData.power_hp) : null,
           price: parseFloat(editCarData.price),
@@ -430,10 +435,11 @@ const Admin = () => {
     setEditCarData({
       brand: car.brand,
       model: car.model,
-      year: car.year.toString(),
+      first_registration_date: car.first_registration_date,
       mileage: car.mileage.toString(),
       fuel_type: car.fuel_type,
       transmission: car.transmission,
+      previous_owners: car.previous_owners?.toString() || "",
       color: car.color || "",
       power_hp: car.power_hp?.toString() || "",
       price: car.price.toString(),
@@ -537,7 +543,7 @@ const Admin = () => {
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              <span className="font-semibold">{inquiry.car_brand} {inquiry.car_model} ({inquiry.car_year})</span>
+                              <span className="font-semibold">{inquiry.car_brand} {inquiry.car_model} ({format(new Date(inquiry.car_first_registration_date), "MM/yyyy")})</span>
                               {!inquiry.is_read && <Badge variant="secondary">Neu</Badge>}
                             </div>
                             <p className="text-sm font-medium text-primary mb-1">{formatPrice(inquiry.car_price)}</p>
@@ -665,7 +671,8 @@ const Admin = () => {
                               {request.customer_name} • {request.customer_email} • {request.customer_phone}
                             </p>
                             <p className="text-sm mt-1">
-                              EZ {request.year} • {request.mileage.toLocaleString("de-DE")} km • {request.fuel_type}
+                              EZ {format(new Date(request.first_registration_date), "MM/yyyy")} • {request.mileage.toLocaleString("de-DE")} km • {request.fuel_type}
+                              {request.previous_owners !== null && ` • ${request.previous_owners} Vorbesitzer`}
                             </p>
                             {request.asking_price && (
                               <p className="font-semibold mt-1">Preisvorstellung: {formatPrice(request.asking_price)}</p>
@@ -733,7 +740,7 @@ const Admin = () => {
                           <h4 className="font-semibold">{car.brand} {car.model}</h4>
                           <p className="text-lg font-bold text-primary">{formatPrice(car.price)}</p>
                           <p className="text-sm text-muted-foreground">
-                            EZ {car.year} • {car.mileage.toLocaleString("de-DE")} km
+                            EZ {format(new Date(car.first_registration_date), "MM/yyyy")} • {car.mileage.toLocaleString("de-DE")} km
                           </p>
                           <div className="flex flex-wrap gap-2 mt-4">
                             <Button size="sm" variant="outline" onClick={() => openEditDialog(car)}>
@@ -795,8 +802,8 @@ const Admin = () => {
                 <Input value={newCarData.model} onChange={(e) => setNewCarData({ ...newCarData, model: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>Baujahr *</Label>
-                <Input type="number" value={newCarData.year} onChange={(e) => setNewCarData({ ...newCarData, year: e.target.value })} />
+                <Label>Erstzulassung * (JJJJ-MM-TT)</Label>
+                <Input type="date" value={newCarData.first_registration_date} onChange={(e) => setNewCarData({ ...newCarData, first_registration_date: e.target.value })} />
               </div>
               <div className="space-y-2">
                 <Label>Kilometerstand *</Label>
@@ -831,6 +838,10 @@ const Admin = () => {
               <div className="space-y-2">
                 <Label>Leistung (PS)</Label>
                 <Input type="number" value={newCarData.power_hp} onChange={(e) => setNewCarData({ ...newCarData, power_hp: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Vorbesitzer</Label>
+                <Input type="number" min="0" value={newCarData.previous_owners} onChange={(e) => setNewCarData({ ...newCarData, previous_owners: e.target.value })} />
               </div>
               <div className="space-y-2">
                 <Label>Farbe</Label>
@@ -926,8 +937,8 @@ const Admin = () => {
                 <Input value={editCarData.model} onChange={(e) => setEditCarData({ ...editCarData, model: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>Baujahr *</Label>
-                <Input type="number" value={editCarData.year} onChange={(e) => setEditCarData({ ...editCarData, year: e.target.value })} />
+                <Label>Erstzulassung * (JJJJ-MM-TT)</Label>
+                <Input type="date" value={editCarData.first_registration_date} onChange={(e) => setEditCarData({ ...editCarData, first_registration_date: e.target.value })} />
               </div>
               <div className="space-y-2">
                 <Label>Kilometerstand *</Label>
@@ -962,6 +973,10 @@ const Admin = () => {
               <div className="space-y-2">
                 <Label>Leistung (PS)</Label>
                 <Input type="number" value={editCarData.power_hp} onChange={(e) => setEditCarData({ ...editCarData, power_hp: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Vorbesitzer</Label>
+                <Input type="number" min="0" value={editCarData.previous_owners} onChange={(e) => setEditCarData({ ...editCarData, previous_owners: e.target.value })} />
               </div>
               <div className="space-y-2">
                 <Label>Farbe</Label>

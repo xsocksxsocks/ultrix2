@@ -17,10 +17,10 @@ export type Database = {
       car_inquiries: {
         Row: {
           car_brand: string
+          car_first_registration_date: string
           car_id: string
           car_model: string
           car_price: number
-          car_year: number
           created_at: string
           customer_email: string
           customer_name: string
@@ -32,10 +32,10 @@ export type Database = {
         }
         Insert: {
           car_brand: string
+          car_first_registration_date: string
           car_id: string
           car_model: string
           car_price: number
-          car_year: number
           created_at?: string
           customer_email: string
           customer_name: string
@@ -47,10 +47,10 @@ export type Database = {
         }
         Update: {
           car_brand?: string
+          car_first_registration_date?: string
           car_id?: string
           car_model?: string
           car_price?: number
-          car_year?: number
           created_at?: string
           customer_email?: string
           customer_name?: string
@@ -83,6 +83,7 @@ export type Database = {
           customer_name: string
           customer_phone: string
           description: string | null
+          first_registration_date: string
           fuel_type: string
           id: string
           images: string[]
@@ -90,9 +91,9 @@ export type Database = {
           mileage: number
           model: string
           notes: string | null
+          previous_owners: number | null
           status: string | null
           transmission: string
-          year: number
         }
         Insert: {
           appointment_confirmed?: boolean | null
@@ -106,6 +107,7 @@ export type Database = {
           customer_name: string
           customer_phone: string
           description?: string | null
+          first_registration_date: string
           fuel_type: string
           id?: string
           images: string[]
@@ -113,9 +115,9 @@ export type Database = {
           mileage: number
           model: string
           notes?: string | null
+          previous_owners?: number | null
           status?: string | null
           transmission: string
-          year: number
         }
         Update: {
           appointment_confirmed?: boolean | null
@@ -129,6 +131,7 @@ export type Database = {
           customer_name?: string
           customer_phone?: string
           description?: string | null
+          first_registration_date?: string
           fuel_type?: string
           id?: string
           images?: string[]
@@ -136,9 +139,9 @@ export type Database = {
           mileage?: number
           model?: string
           notes?: string | null
+          previous_owners?: number | null
           status?: string | null
           transmission?: string
-          year?: number
         }
         Relationships: []
       }
@@ -149,6 +152,7 @@ export type Database = {
           created_at: string
           description: string | null
           features: string[] | null
+          first_registration_date: string
           fuel_type: string
           id: string
           images: string[]
@@ -158,10 +162,10 @@ export type Database = {
           mileage: number
           model: string
           power_hp: number | null
+          previous_owners: number | null
           price: number
           transmission: string
           updated_at: string
-          year: number
         }
         Insert: {
           brand: string
@@ -169,6 +173,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           features?: string[] | null
+          first_registration_date: string
           fuel_type: string
           id?: string
           images: string[]
@@ -178,10 +183,10 @@ export type Database = {
           mileage: number
           model: string
           power_hp?: number | null
+          previous_owners?: number | null
           price: number
           transmission: string
           updated_at?: string
-          year: number
         }
         Update: {
           brand?: string
@@ -189,6 +194,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           features?: string[] | null
+          first_registration_date?: string
           fuel_type?: string
           id?: string
           images?: string[]
@@ -198,10 +204,10 @@ export type Database = {
           mileage?: number
           model?: string
           power_hp?: number | null
+          previous_owners?: number | null
           price?: number
           transmission?: string
           updated_at?: string
-          year?: number
         }
         Relationships: []
       }

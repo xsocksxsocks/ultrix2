@@ -22,10 +22,11 @@ const sellCarSchema = z.object({
   customer_phone: z.string().min(5, "Bitte geben Sie eine gültige Telefonnummer ein").max(30),
   brand: z.string().min(1, "Bitte wählen Sie eine Marke").max(50),
   model: z.string().min(1, "Bitte geben Sie das Modell ein").max(100),
-  year: z.number().min(1900, "Ungültiges Baujahr").max(new Date().getFullYear() + 1),
+  first_registration_date: z.date({ required_error: "Bitte wählen Sie ein Erstzulassungsdatum" }),
   mileage: z.number().min(0, "Ungültiger Kilometerstand"),
   fuel_type: z.string().min(1, "Bitte wählen Sie einen Kraftstoff"),
   transmission: z.string().min(1, "Bitte wählen Sie ein Getriebe"),
+  previous_owners: z.number().min(0, "Ungültige Anzahl").optional(),
   color: z.string().max(50).optional(),
   description: z.string().max(2000).optional(),
   asking_price: z.number().min(0).optional(),
@@ -44,14 +45,15 @@ const Verkaufen = () => {
     customer_phone: "",
     brand: "",
     model: "",
-    year: "",
     mileage: "",
     fuel_type: "",
     transmission: "",
+    previous_owners: "",
     color: "",
     description: "",
     asking_price: "",
   });
+  const [firstRegistrationDate, setFirstRegistrationDate] = useState<Date | undefined>();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -90,8 +92,9 @@ const Verkaufen = () => {
     try {
       const validatedData = sellCarSchema.parse({
         ...formData,
-        year: parseInt(formData.year),
+        first_registration_date: firstRegistrationDate,
         mileage: parseInt(formData.mileage),
+        previous_owners: formData.previous_owners ? parseInt(formData.previous_owners) : undefined,
         asking_price: formData.asking_price ? parseFloat(formData.asking_price) : undefined,
       });
 
@@ -119,10 +122,11 @@ const Verkaufen = () => {
         customer_phone: validatedData.customer_phone,
         brand: validatedData.brand,
         model: validatedData.model,
-        year: validatedData.year,
+        first_registration_date: format(validatedData.first_registration_date, "yyyy-MM-dd"),
         mileage: validatedData.mileage,
         fuel_type: validatedData.fuel_type,
         transmission: validatedData.transmission,
+        previous_owners: validatedData.previous_owners || null,
         color: validatedData.color || null,
         description: validatedData.description || null,
         asking_price: validatedData.asking_price || null,
@@ -323,18 +327,31 @@ const Verkaufen = () => {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="year">Baujahr *</Label>
-                          <Input
-                            id="year"
-                            name="year"
-                            type="number"
-                            min="1900"
-                            max={new Date().getFullYear() + 1}
-                            value={formData.year}
-                            onChange={handleChange}
-                            required
-                            className="input-classic"
-                          />
+                          <Label>Erstzulassung *</Label>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className={cn(
+                                  "w-full justify-start text-left font-normal input-classic",
+                                  !firstRegistrationDate && "text-muted-foreground"
+                                )}
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {firstRegistrationDate ? format(firstRegistrationDate, "MM/yyyy", { locale: de }) : "Datum wählen"}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={firstRegistrationDate}
+                                onSelect={setFirstRegistrationDate}
+                                disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                                initialFocus
+                                className={cn("p-3 pointer-events-auto")}
+                              />
+                            </PopoverContent>
+                          </Popover>
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="mileage">Kilometerstand *</Label>
@@ -375,6 +392,19 @@ const Verkaufen = () => {
                               ))}
                             </SelectContent>
                           </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="previous_owners">Vorbesitzer</Label>
+                          <Input
+                            id="previous_owners"
+                            name="previous_owners"
+                            type="number"
+                            min="0"
+                            value={formData.previous_owners}
+                            onChange={handleChange}
+                            className="input-classic"
+                            placeholder="z.B. 2"
+                          />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="color">Farbe</Label>

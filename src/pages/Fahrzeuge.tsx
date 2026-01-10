@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { Car, Fuel, Calendar, Gauge, Settings2, ShieldCheck, CheckCircle, Award, FileCheck, Handshake } from "lucide-react";
+import { format } from "date-fns";
+import { de } from "date-fns/locale";
+import { Car, Fuel, Calendar, Gauge, Settings2, ShieldCheck, CheckCircle, Award, FileCheck, Handshake, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,12 +15,13 @@ interface CarForSale {
   id: string;
   brand: string;
   model: string;
-  year: number;
+  first_registration_date: string;
   mileage: number;
   fuel_type: string;
   transmission: string;
   color: string | null;
   power_hp: number | null;
+  previous_owners: number | null;
   price: number;
   description: string | null;
   features: string[] | null;
@@ -184,7 +187,7 @@ const Fahrzeuge = () => {
                     <div className="grid grid-cols-2 gap-3 text-sm text-muted-foreground">
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4" />
-                        <span>EZ {car.year}</span>
+                        <span>EZ {format(new Date(car.first_registration_date), "MM/yyyy")}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Gauge className="h-4 w-4" />
@@ -247,7 +250,7 @@ const Fahrzeuge = () => {
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   <div>
                     <p className="text-sm text-muted-foreground">Erstzulassung</p>
-                    <p className="font-medium">{selectedCar.year}</p>
+                    <p className="font-medium">{format(new Date(selectedCar.first_registration_date), "MMMM yyyy", { locale: de })}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Kilometerstand</p>
@@ -261,6 +264,12 @@ const Fahrzeuge = () => {
                     <p className="text-sm text-muted-foreground">Getriebe</p>
                     <p className="font-medium">{selectedCar.transmission}</p>
                   </div>
+                  {selectedCar.previous_owners !== null && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Vorbesitzer</p>
+                      <p className="font-medium">{selectedCar.previous_owners}</p>
+                    </div>
+                  )}
                   {selectedCar.color && (
                     <div>
                       <p className="text-sm text-muted-foreground">Farbe</p>
