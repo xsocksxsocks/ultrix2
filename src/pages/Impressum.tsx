@@ -50,7 +50,7 @@ const Impressum = () => {
             <p>
               Umsatzsteuer-Identifikationsnummer gemäß § 27 a Umsatzsteuergesetz:
               <br />
-              [wird ergänzt]
+              DE303256085
             </p>
 
             <h3 className="font-heading text-xl font-semibold mt-8 mb-4">EU-Streitschlichtung</h3>
