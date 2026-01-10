@@ -159,7 +159,8 @@ const Verkaufen = () => {
   };
 
   const carBrands = [
-    "Audi", "BMW", "Ford", "Mercedes-Benz", "Opel", "Porsche", "Skoda", 
+    "Audi", "BMW", "Citroën", "Dacia", "Ford", "Hyundai", "Kia", "Mazda", 
+    "Mercedes-Benz", "Opel", "Porsche", "Renault", "Skoda", "Smart",
     "Toyota", "Volkswagen", "Volvo", "Andere"
   ];
 

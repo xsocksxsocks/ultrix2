@@ -460,7 +460,7 @@ const Admin = () => {
     style: "currency", currency: "EUR", minimumFractionDigits: 0,
   }).format(price);
 
-  const carBrands = ["Audi", "BMW", "Ford", "Mercedes-Benz", "Opel", "Porsche", "Skoda", "Toyota", "Volkswagen", "Volvo", "Andere"];
+  const carBrands = ["Audi", "BMW", "Citroën", "Dacia", "Ford", "Hyundai", "Kia", "Mazda", "Mercedes-Benz", "Opel", "Porsche", "Renault", "Skoda", "Smart", "Toyota", "Volkswagen", "Volvo", "Andere"];
   const fuelTypes = ["Benzin", "Diesel", "Hybrid", "Elektro", "Gas"];
   const transmissions = ["Schaltgetriebe", "Automatik"];
 
