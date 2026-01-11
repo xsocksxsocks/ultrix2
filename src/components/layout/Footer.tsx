@@ -20,9 +20,9 @@ const Footer = () => {
           <div>
             <h3 className="font-heading font-semibold text-lg mb-4">Kontakt</h3>
             <div className="space-y-3 text-sm">
-              <a href="tel:+4910000000" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+              <a href="tel:+4962046129035" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                 <Phone className="h-4 w-4" />
-                +49 10000000
+                +49 6204 6129035
               </a>
               <a href="mailto:kontakt@ultrix-kfz.net" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                 <Mail className="h-4 w-4" />

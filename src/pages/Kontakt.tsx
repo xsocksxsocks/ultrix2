@@ -73,7 +73,7 @@ const Kontakt = () => {
   };
 
   const contactInfo = [
-    { icon: Phone, label: "Telefon", value: "+49 10000000", href: "tel:+4910000000" },
+    { icon: Phone, label: "Telefon", value: "+49 6204 6129035", href: "tel:+4962046129035" },
     { icon: Mail, label: "E-Mail", value: "kontakt@ultrix-kfz.net", href: "mailto:kontakt@ultrix-kfz.net" },
     { icon: MapPin, label: "Adresse", value: "Weihgartenstr. 19, 68519 Viernheim", href: null },
   ];

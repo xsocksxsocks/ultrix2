@@ -22,9 +22,9 @@ const Header = () => {
       <div className="bg-primary text-primary-foreground py-2">
         <div className="section-container flex justify-between items-center text-sm">
           <div className="flex items-center gap-4">
-            <a href="tel:+4910000000" className="flex items-center gap-1 hover:opacity-80 transition-opacity">
+            <a href="tel:+4962046129035" className="flex items-center gap-1 hover:opacity-80 transition-opacity">
               <Phone className="h-3 w-3" />
-              <span className="hidden sm:inline">+49 10000000</span>
+              <span className="hidden sm:inline">+49 6204 6129035</span>
             </a>
             <a href="mailto:kontakt@ultrix-kfz.net" className="flex items-center gap-1 hover:opacity-80 transition-opacity">
               <Mail className="h-3 w-3" />
