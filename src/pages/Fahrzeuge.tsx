@@ -208,6 +208,12 @@ const Fahrzeuge = () => {
                         <span>{car.transmission}</span>
                       </div>
                     </div>
+                    <div className="mt-3 pt-3 border-t border-border text-sm">
+                      <span className="text-muted-foreground">MwSt. ausweisbar: </span>
+                      <span className={car.vat_deductible ? "text-accent font-medium" : "text-muted-foreground"}>
+                        {car.vat_deductible ? "Ja" : "Nein"}
+                      </span>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
