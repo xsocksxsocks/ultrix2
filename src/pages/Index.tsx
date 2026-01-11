@@ -279,10 +279,10 @@ const Index = () => {
               <Link to="/verkaufen">Termin vereinbaren</Link>
             </Button>
             <Button asChild size="lg" className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-semibold">
-              <Link to="/kontakt">
+              <a href="tel:+4962046129035">
                 <Phone className="h-5 w-5 mr-2" />
-                06204 / XXXXXX
-              </Link>
+                06204 / 6129035
+              </a>
             </Button>
           </div>
         </div>
