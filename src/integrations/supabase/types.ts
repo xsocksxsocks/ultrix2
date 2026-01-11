@@ -166,6 +166,7 @@ export type Database = {
           price: number
           transmission: string
           updated_at: string
+          vat_deductible: boolean | null
         }
         Insert: {
           brand: string
@@ -187,6 +188,7 @@ export type Database = {
           price: number
           transmission: string
           updated_at?: string
+          vat_deductible?: boolean | null
         }
         Update: {
           brand?: string
@@ -208,6 +210,7 @@ export type Database = {
           price?: number
           transmission?: string
           updated_at?: string
+          vat_deductible?: boolean | null
         }
         Relationships: []
       }
