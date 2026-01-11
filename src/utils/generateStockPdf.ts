@@ -192,22 +192,17 @@ const addCoverPage = (doc: jsPDF, pageWidth: number, pageHeight: number, margin:
     doc.setFillColor(22, 163, 74);
     doc.roundedRect(boxX, boxY, 3, boxHeight, 1, 1, "F");
 
-    // Checkmark
-    doc.setFontSize(12);
-    doc.setTextColor(22, 163, 74);
-    doc.text("✓", boxX + 8, boxY + 9);
-
     // Title
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(20, 83, 45);
-    doc.text(feature.title, boxX + 16, boxY + 9);
+    doc.text(feature.title, boxX + 8, boxY + 9);
 
     // Description
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(80, 80, 80);
-    doc.text(feature.desc, boxX + 16, boxY + 15);
+    doc.text(feature.desc, boxX + 8, boxY + 15);
   });
 
   yPos += 2 * (boxHeight + boxGap) + 15;
