@@ -31,6 +31,7 @@ interface CarForSale {
   images: string[];
   is_sold: boolean;
   is_featured: boolean;
+  vat_deductible: boolean | null;
 }
 
 const Fahrzeuganfrage = () => {
@@ -205,9 +206,17 @@ const Fahrzeuganfrage = () => {
                     </div>
                   )}
 
-                  <p className="text-3xl font-bold text-primary">
-                    {formatPrice(car.price)}
-                  </p>
+                  <div>
+                    <p className="text-3xl font-bold text-primary">
+                      {formatPrice(car.price)} <span className="text-lg font-normal">brutto</span>
+                    </p>
+                    <p className="text-sm mt-1">
+                      <span className="text-muted-foreground">MwSt. ausweisbar: </span>
+                      <span className={car.vat_deductible ? "text-accent font-medium" : "text-muted-foreground"}>
+                        {car.vat_deductible ? "Ja" : "Nein"}
+                      </span>
+                    </p>
+                  </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex items-center gap-2 text-muted-foreground">
