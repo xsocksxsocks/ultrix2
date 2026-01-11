@@ -718,7 +718,16 @@ const Admin = () => {
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Fahrzeuge im Angebot</CardTitle>
                 <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => carsForSale && generateStockPdf(carsForSale)}>
+                  <Button 
+                    variant="outline" 
+                    onClick={async () => {
+                      if (carsForSale) {
+                        toast({ title: "PDF wird erstellt...", description: "Bilder werden geladen." });
+                        await generateStockPdf(carsForSale);
+                        toast({ title: "PDF erstellt", description: "Der Download wurde gestartet." });
+                      }
+                    }}
+                  >
                     <Download className="h-4 w-4 mr-2" />
                     PDF Export
                   </Button>
