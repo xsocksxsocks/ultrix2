@@ -149,8 +149,8 @@ const addCoverPage = (doc: jsPDF, pageWidth: number, pageHeight: number, margin:
   doc.setTextColor(100, 100, 100);
   doc.text(`Stand: ${format(new Date(), "dd.MM.yyyy")} • ${carCount} Fahrzeuge verfügbar`, pageWidth / 2, 80, { align: "center" });
 
-  // Decorative line
-  doc.setDrawColor(34, 197, 94);
+  // Decorative line - darker green
+  doc.setDrawColor(22, 163, 74);
   doc.setLineWidth(1);
   doc.line(pageWidth / 2 - 40, 88, pageWidth / 2 + 40, 88);
 
@@ -185,22 +185,22 @@ const addCoverPage = (doc: jsPDF, pageWidth: number, pageHeight: number, margin:
     const boxY = yPos + row * (boxHeight + boxGap);
 
     // Box background
-    doc.setFillColor(240, 253, 244);
+    doc.setFillColor(236, 253, 245);
     doc.roundedRect(boxX, boxY, boxWidth, boxHeight, 2, 2, "F");
 
-    // Left accent
-    doc.setFillColor(34, 197, 94);
+    // Left accent - darker green
+    doc.setFillColor(22, 163, 74);
     doc.roundedRect(boxX, boxY, 3, boxHeight, 1, 1, "F");
 
     // Checkmark
     doc.setFontSize(12);
-    doc.setTextColor(34, 197, 94);
+    doc.setTextColor(22, 163, 74);
     doc.text("✓", boxX + 8, boxY + 9);
 
     // Title
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(22, 101, 52);
+    doc.setTextColor(20, 83, 45);
     doc.text(feature.title, boxX + 16, boxY + 9);
 
     // Description
@@ -210,23 +210,44 @@ const addCoverPage = (doc: jsPDF, pageWidth: number, pageHeight: number, margin:
     doc.text(feature.desc, boxX + 16, boxY + 15);
   });
 
-  yPos += 2 * (boxHeight + boxGap) + 20;
+  yPos += 2 * (boxHeight + boxGap) + 15;
+
+  // Website info box
+  doc.setFillColor(250, 250, 250);
+  doc.roundedRect(margin, yPos, pageWidth - margin * 2, 32, 2, 2, "F");
+  doc.setDrawColor(220, 220, 220);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(margin, yPos, pageWidth - margin * 2, 32, 2, 2, "S");
+
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(60, 60, 60);
+  
+  const websiteText = "Eine vollständige Übersicht aller Fahrzeuge mit Bildern und Details finden Sie auf unserer Webseite. Bei einigen Fahrzeugen ist die Mehrwertsteuer ausweisbar. Fahrzeuggutachten können auf Anfrage bereitgestellt werden.";
+  const websiteLines = doc.splitTextToSize(websiteText, pageWidth - margin * 2 - 10);
+  doc.text(websiteLines, pageWidth / 2, yPos + 8, { align: "center" });
+
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(22, 163, 74);
+  doc.text("ultrix-kfz.net/fahrzeuge", pageWidth / 2, yPos + 26, { align: "center" });
+
+  yPos += 40;
 
   // Contact info box
   doc.setFillColor(248, 248, 248);
-  doc.roundedRect(margin, yPos, pageWidth - margin * 2, 35, 2, 2, "F");
+  doc.roundedRect(margin, yPos, pageWidth - margin * 2, 28, 2, 2, "F");
 
   doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(50, 50, 50);
-  doc.text("Kontakt", pageWidth / 2, yPos + 10, { align: "center" });
+  doc.text("Kontakt", pageWidth / 2, yPos + 8, { align: "center" });
 
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(70, 70, 70);
-  doc.text("ULTRIX UG (haftungsbeschränkt)", pageWidth / 2, yPos + 18, { align: "center" });
-  doc.text("Weihgartenstr. 19 • 68519 Viernheim", pageWidth / 2, yPos + 24, { align: "center" });
-  doc.text("+49 6204 6129035 • kontakt@ultrix-kfz.net", pageWidth / 2, yPos + 30, { align: "center" });
+  doc.text("ULTRIX UG (haftungsbeschränkt) • Weihgartenstr. 19 • 68519 Viernheim", pageWidth / 2, yPos + 16, { align: "center" });
+  doc.text("+49 6204 6129035 • kontakt@ultrix-kfz.net", pageWidth / 2, yPos + 22, { align: "center" });
 };
 
 export const generateStockPdf = async (cars: Car[]) => {
@@ -258,7 +279,7 @@ export const generateStockPdf = async (cars: Car[]) => {
   doc.addPage();
   addHeader(doc, pageWidth, margin, logoData);
 
-  // Build table data
+  // Build table data - removed MwSt column
   const tableData = availableCars.map((car) => [
     `${car.brand} ${car.model}`,
     format(new Date(car.first_registration_date), "MM/yyyy"),
@@ -267,12 +288,11 @@ export const generateStockPdf = async (cars: Car[]) => {
     car.fuel_type,
     car.transmission,
     car.previous_owners !== null && car.previous_owners !== undefined ? car.previous_owners.toString() : "—",
-    car.vat_deductible ? "Ja" : "Nein",
     formatPrice(car.price),
     car.is_reserved ? "Reserviert" : "Verfügbar",
   ]);
 
-  // Create table
+  // Create table with neutral colors
   autoTable(doc, {
     startY: 32,
     head: [[
@@ -283,14 +303,13 @@ export const generateStockPdf = async (cars: Car[]) => {
       "Kraftstoff",
       "Getriebe",
       "VB",
-      "MwSt.",
       "Preis",
       "Status",
     ]],
     body: tableData,
     theme: "grid",
     headStyles: {
-      fillColor: [34, 197, 94],
+      fillColor: [55, 65, 81],
       textColor: [255, 255, 255],
       fontSize: 8,
       fontStyle: "bold",
@@ -308,81 +327,33 @@ export const generateStockPdf = async (cars: Car[]) => {
       fillColor: [248, 250, 252],
     },
     columnStyles: {
-      0: { fontStyle: "bold", cellWidth: 35 },
+      0: { fontStyle: "bold", cellWidth: 38 },
       1: { halign: "center", cellWidth: 16 },
-      2: { halign: "right", cellWidth: 22 },
-      3: { halign: "center", cellWidth: 16 },
-      4: { halign: "center", cellWidth: 18 },
-      5: { halign: "center", cellWidth: 18 },
-      6: { halign: "center", cellWidth: 10 },
-      7: { halign: "center", cellWidth: 12 },
-      8: { halign: "right", fontStyle: "bold", cellWidth: 28 },
-      9: { halign: "center", cellWidth: 18 },
+      2: { halign: "right", cellWidth: 24 },
+      3: { halign: "center", cellWidth: 18 },
+      4: { halign: "center", cellWidth: 20 },
+      5: { halign: "center", cellWidth: 20 },
+      6: { halign: "center", cellWidth: 12 },
+      7: { halign: "right", fontStyle: "bold", cellWidth: 30 },
+      8: { halign: "center", cellWidth: 20 },
     },
     margin: { left: margin, right: margin },
     didDrawPage: (data) => {
-      // Add header on each page (except the page where autoTable already drew)
       if (data.pageNumber > 1) {
         addHeader(doc, pageWidth, margin, logoData);
       }
     },
     didParseCell: (data) => {
       // Style status column
-      if (data.section === "body" && data.column.index === 9) {
+      if (data.section === "body" && data.column.index === 8) {
         if (data.cell.raw === "Reserviert") {
           data.cell.styles.textColor = [245, 158, 11];
           data.cell.styles.fontStyle = "bold";
         } else {
-          data.cell.styles.textColor = [34, 197, 94];
-        }
-      }
-      // Style MwSt column
-      if (data.section === "body" && data.column.index === 7) {
-        if (data.cell.raw === "Ja") {
-          data.cell.styles.textColor = [34, 197, 94];
-          data.cell.styles.fontStyle = "bold";
+          data.cell.styles.textColor = [22, 163, 74];
         }
       }
     },
-  });
-
-  // Add guarantee info below table
-  const finalY = (doc as any).lastAutoTable?.finalY || 150;
-  let yPos = finalY + 10;
-
-  // Check if we need a new page for guarantees
-  if (yPos > pageHeight - 50) {
-    doc.addPage();
-    addHeader(doc, pageWidth, margin, logoData);
-    yPos = 35;
-  }
-
-  // Guarantee badges - vertically stacked
-  const badges = [
-    { text: "Technischer Zustand garantiert", icon: "✓" },
-    { text: "Keine zusätzlichen Käuferkosten", icon: "✓" },
-  ];
-
-  const badgeHeight = 8;
-  const badgeGap = 3;
-  const badgeWidth = pageWidth - margin * 2;
-
-  badges.forEach((badge, idx) => {
-    const badgeY = yPos + idx * (badgeHeight + badgeGap);
-
-    // Badge background
-    doc.setFillColor(240, 253, 244);
-    doc.roundedRect(margin, badgeY, badgeWidth, badgeHeight, 2, 2, "F");
-
-    // Left accent bar
-    doc.setFillColor(34, 197, 94);
-    doc.roundedRect(margin, badgeY, 3, badgeHeight, 1, 1, "F");
-
-    // Text
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(22, 101, 52);
-    doc.text(`${badge.icon} ${badge.text}`, margin + 7, badgeY + 5.5);
   });
 
   // Add footers to all pages
