@@ -722,9 +722,9 @@ const Admin = () => {
                     variant="outline" 
                     onClick={async () => {
                       if (carsForSale) {
-                        toast({ title: "PDF wird erstellt...", description: "Bilder werden geladen." });
+                        toast({ title: "PDF wird erstellt...", description: "Bilder werden geladen.", duration: 2000 });
                         await generateStockPdf(carsForSale);
-                        toast({ title: "PDF erstellt", description: "Der Download wurde gestartet." });
+                        toast({ title: "PDF erstellt", description: "Der Download wurde gestartet.", duration: 3000 });
                       }
                     }}
                   >
