@@ -12,7 +12,6 @@ const AdminLogin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -79,40 +78,7 @@ const AdminLogin = () => {
         title: "Anmeldung fehlgeschlagen",
         description: error.message === "Invalid login credentials" 
           ? "E-Mail oder Passwort ist falsch." 
-          : error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/admin`,
-        },
-      });
-
-      if (error) throw error;
-
-      if (data.user) {
-        toast({
-          title: "Registrierung erfolgreich",
-          description: `Benutzer ${email} wurde erstellt. User-ID: ${data.user.id}`,
-        });
-        setIsSignUp(false);
-      }
-    } catch (error: any) {
-      toast({
-        title: "Registrierung fehlgeschlagen",
-        description: error.message,
+          : "Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.",
         variant: "destructive",
       });
     } finally {
@@ -130,7 +96,7 @@ const AdminLogin = () => {
           <CardTitle className="font-heading text-2xl">Admin-Bereich</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={isSignUp ? handleSignUp : handleLogin} className="space-y-6">
+          <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="email">E-Mail</Label>
               <div className="relative">
@@ -162,17 +128,8 @@ const AdminLogin = () => {
               </div>
             </div>
             <Button type="submit" disabled={isLoading} className="w-full">
-              {isLoading ? "Wird verarbeitet..." : isSignUp ? "Registrieren" : "Anmelden"}
+              {isLoading ? "Wird angemeldet..." : "Anmelden"}
             </Button>
-            <div className="text-center text-sm">
-              <button
-                type="button"
-                onClick={() => setIsSignUp(!isSignUp)}
-                className="text-primary hover:underline"
-              >
-                {isSignUp ? "Bereits registriert? Anmelden" : "Noch kein Account? Registrieren"}
-              </button>
-            </div>
           </form>
         </CardContent>
       </Card>
