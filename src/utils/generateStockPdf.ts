@@ -1,5 +1,6 @@
 import jsPDF from "jspdf";
 import { format } from "date-fns";
+import logoImg from "@/assets/ultrix-logo.png";
 
 interface Car {
   id: string;
@@ -44,7 +45,7 @@ const loadImageAsBase64 = (url: string): Promise<string | null> => {
         const ctx = canvas.getContext("2d");
         if (ctx) {
           ctx.drawImage(img, 0, 0);
-          const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
           resolve(dataUrl);
         } else {
           resolve(null);
@@ -58,35 +59,60 @@ const loadImageAsBase64 = (url: string): Promise<string | null> => {
   });
 };
 
-const addHeader = (doc: jsPDF, pageWidth: number, margin: number) => {
-  // Header with company info
-  doc.setFontSize(20);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(41, 41, 41);
-  doc.text("ULTRIX", margin, 18);
+const addHeader = async (doc: jsPDF, pageWidth: number, margin: number, logoData: string | null) => {
+  // Logo
+  if (logoData) {
+    try {
+      doc.addImage(logoData, "PNG", margin, 8, 32, 14, undefined, "MEDIUM");
+    } catch {
+      doc.setFontSize(18);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(41, 41, 41);
+      doc.text("ULTRIX", margin, 18);
+    }
+  } else {
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(41, 41, 41);
+    doc.text("ULTRIX", margin, 18);
+  }
 
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(100, 100, 100);
-  doc.text("Kfz-Handel", margin, 23);
+  // Decorative accent line under logo
+  doc.setDrawColor(200, 160, 60);
+  doc.setLineWidth(0.8);
+  doc.line(margin, 24, margin + 32, 24);
 
-  // Company details on the right
+  // Company details on the right - styled
   doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(80, 80, 80);
   const rightAlign = pageWidth - margin;
-  doc.text("ULTRIX UG (haftungsbeschränkt)", rightAlign, 12, { align: "right" });
-  doc.text("Weihgartenstr. 19, 68519 Viernheim", rightAlign, 16, { align: "right" });
-  doc.text("Tel: +49 6204 6129035", rightAlign, 20, { align: "right" });
-  doc.text("kontakt@ultrix-kfz.net", rightAlign, 24, { align: "right" });
+  doc.text("ULTRIX UG (haftungsbeschränkt)", rightAlign, 10, { align: "right" });
+  doc.text("Weihgartenstr. 19 • 68519 Viernheim", rightAlign, 14, { align: "right" });
+  doc.setTextColor(100, 100, 100);
+  doc.text("+49 6204 6129035", rightAlign, 19, { align: "right" });
+  doc.text("kontakt@ultrix-kfz.net", rightAlign, 23, { align: "right" });
 
-  // Line separator
-  doc.setDrawColor(220, 220, 220);
+  // Elegant separator line
+  doc.setDrawColor(230, 230, 230);
+  doc.setLineWidth(0.3);
   doc.line(margin, 28, pageWidth - margin, 28);
 };
 
 const addFooter = (doc: jsPDF, pageWidth: number, pageHeight: number, pageNumber: number, totalPages: number) => {
+  // Top line
+  doc.setDrawColor(230, 230, 230);
+  doc.setLineWidth(0.3);
+  doc.line(14, pageHeight - 18, pageWidth - 14, pageHeight - 18);
+
+  // Accent
+  doc.setDrawColor(200, 160, 60);
+  doc.setLineWidth(0.8);
+  doc.line(pageWidth / 2 - 15, pageHeight - 18, pageWidth / 2 + 15, pageHeight - 18);
+
   doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
-  doc.setTextColor(128, 128, 128);
+  doc.setTextColor(120, 120, 120);
   doc.text(
     `Seite ${pageNumber} von ${totalPages}`,
     pageWidth / 2,
@@ -94,13 +120,11 @@ const addFooter = (doc: jsPDF, pageWidth: number, pageHeight: number, pageNumber
     { align: "center" }
   );
   doc.text(
-    "ULTRIX UG • Weihgartenstr. 19 • 68519 Viernheim • +49 6204 6129035 • kontakt@ultrix-kfz.net",
+    "ULTRIX UG • Weihgartenstr. 19 • 68519 Viernheim • +49 6204 6129035",
     pageWidth / 2,
     pageHeight - 8,
     { align: "center" }
   );
-  doc.setDrawColor(220, 220, 220);
-  doc.line(14, pageHeight - 16, pageWidth - 14, pageHeight - 16);
 };
 
 export const generateStockPdf = async (cars: Car[]) => {
@@ -109,12 +133,14 @@ export const generateStockPdf = async (cars: Car[]) => {
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 14;
 
+  // Load logo
+  const logoData = await loadImageAsBase64(logoImg);
+
   // Filter only available cars (not sold)
   const availableCars = cars.filter((car) => !car.is_sold);
 
   if (availableCars.length === 0) {
-    // Empty state
-    addHeader(doc, pageWidth, margin);
+    await addHeader(doc, pageWidth, margin, logoData);
     doc.setFontSize(14);
     doc.setTextColor(100, 100, 100);
     doc.text("Derzeit keine Fahrzeuge im Angebot.", pageWidth / 2, 80, { align: "center" });
@@ -131,43 +157,53 @@ export const generateStockPdf = async (cars: Car[]) => {
       doc.addPage();
     }
 
-    addHeader(doc, pageWidth, margin);
+    await addHeader(doc, pageWidth, margin, logoData);
 
-    let yPos = 36;
+    let yPos = 34;
 
-    // Car title
-    doc.setFontSize(16);
+    // Car title with subtle background
+    doc.setFillColor(252, 252, 252);
+    doc.roundedRect(margin, yPos - 4, pageWidth - margin * 2, 12, 1, 1, "F");
+    
+    doc.setFontSize(15);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(41, 41, 41);
-    doc.text(`${car.brand} ${car.model}`, margin, yPos);
+    doc.setTextColor(35, 35, 35);
+    doc.text(`${car.brand} ${car.model}`, margin + 3, yPos + 3);
 
     // Status badge
     if (car.is_reserved) {
       doc.setFillColor(245, 158, 11);
-      doc.roundedRect(pageWidth - margin - 28, yPos - 5, 28, 7, 1, 1, "F");
-      doc.setFontSize(8);
+      doc.roundedRect(pageWidth - margin - 26, yPos - 2, 24, 6, 1, 1, "F");
+      doc.setFontSize(7);
       doc.setTextColor(255, 255, 255);
-      doc.text("RESERVIERT", pageWidth - margin - 14, yPos, { align: "center" });
+      doc.text("RESERVIERT", pageWidth - margin - 14, yPos + 2, { align: "center" });
     }
 
-    yPos += 8;
+    yPos += 14;
 
-    // Price section
-    doc.setFontSize(20);
+    // Price section with accent
+    doc.setFillColor(250, 248, 245);
+    doc.roundedRect(margin, yPos - 3, pageWidth - margin * 2, 11, 1, 1, "F");
+    
+    // Gold accent bar
+    doc.setFillColor(200, 160, 60);
+    doc.rect(margin, yPos - 3, 3, 11, "F");
+
+    doc.setFontSize(18);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(41, 41, 41);
+    doc.setTextColor(35, 35, 35);
     const priceText = formatPrice(car.price);
-    doc.text(priceText, margin, yPos);
+    doc.text(priceText, margin + 8, yPos + 4);
 
     // VAT info
     if (car.vat_deductible) {
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(34, 139, 34);
-      doc.text("brutto • MwSt. ausweisbar", margin + doc.getTextWidth(priceText) + 4, yPos);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(46, 125, 50);
+      doc.text("brutto • MwSt. ausweisbar", margin + 8 + doc.getTextWidth(priceText) + 5, yPos + 4);
     }
 
-    yPos += 10;
+    yPos += 14;
 
     // Load main image
     const mainImageUrl = car.images?.[0];
@@ -177,12 +213,22 @@ export const generateStockPdf = async (cars: Car[]) => {
       const imgData = await loadImageAsBase64(mainImageUrl);
       if (imgData) {
         try {
-          // Main image - large
           const imgWidth = pageWidth - margin * 2;
-          const imgHeight = 70;
+          const imgHeight = 65;
+          
+          // Subtle shadow effect
+          doc.setFillColor(240, 240, 240);
+          doc.roundedRect(margin + 1, yPos + 1, imgWidth, imgHeight, 2, 2, "F");
+          
           doc.addImage(imgData, "JPEG", margin, yPos, imgWidth, imgHeight, undefined, "MEDIUM");
+          
+          // Border
+          doc.setDrawColor(220, 220, 220);
+          doc.setLineWidth(0.3);
+          doc.roundedRect(margin, yPos, imgWidth, imgHeight, 2, 2, "S");
+          
           mainImageLoaded = true;
-          yPos += imgHeight + 4;
+          yPos += imgHeight + 3;
         } catch (e) {
           console.error("Failed to add main image:", e);
         }
@@ -190,20 +236,19 @@ export const generateStockPdf = async (cars: Car[]) => {
     }
 
     if (!mainImageLoaded) {
-      // Placeholder for missing image
-      doc.setFillColor(240, 240, 240);
-      doc.rect(margin, yPos, pageWidth - margin * 2, 70, "F");
-      doc.setFontSize(12);
-      doc.setTextColor(150, 150, 150);
-      doc.text("Kein Bild verfügbar", pageWidth / 2, yPos + 35, { align: "center" });
-      yPos += 74;
+      doc.setFillColor(245, 245, 245);
+      doc.roundedRect(margin, yPos, pageWidth - margin * 2, 65, 2, 2, "F");
+      doc.setFontSize(11);
+      doc.setTextColor(170, 170, 170);
+      doc.text("Kein Bild verfügbar", pageWidth / 2, yPos + 32, { align: "center" });
+      yPos += 68;
     }
 
-    // Small thumbnail images (up to 4)
+    // Thumbnail images (up to 4)
     const thumbnails = car.images?.slice(1, 5) || [];
     if (thumbnails.length > 0) {
       const thumbWidth = (pageWidth - margin * 2 - 6) / 4;
-      const thumbHeight = 28;
+      const thumbHeight = 26;
       let thumbX = margin;
 
       for (const thumbUrl of thumbnails) {
@@ -211,110 +256,116 @@ export const generateStockPdf = async (cars: Car[]) => {
         if (thumbData) {
           try {
             doc.addImage(thumbData, "JPEG", thumbX, yPos, thumbWidth, thumbHeight, undefined, "MEDIUM");
-          } catch (e) {
-            // Draw placeholder
-            doc.setFillColor(240, 240, 240);
-            doc.rect(thumbX, yPos, thumbWidth, thumbHeight, "F");
+            doc.setDrawColor(230, 230, 230);
+            doc.setLineWidth(0.2);
+            doc.roundedRect(thumbX, yPos, thumbWidth, thumbHeight, 1, 1, "S");
+          } catch {
+            doc.setFillColor(248, 248, 248);
+            doc.roundedRect(thumbX, yPos, thumbWidth, thumbHeight, 1, 1, "F");
           }
         } else {
-          doc.setFillColor(240, 240, 240);
-          doc.rect(thumbX, yPos, thumbWidth, thumbHeight, "F");
+          doc.setFillColor(248, 248, 248);
+          doc.roundedRect(thumbX, yPos, thumbWidth, thumbHeight, 1, 1, "F");
         }
         thumbX += thumbWidth + 2;
       }
-      yPos += thumbHeight + 6;
+      yPos += thumbHeight + 5;
     }
 
-    // Specifications table
-    doc.setFillColor(248, 248, 248);
-    doc.rect(margin, yPos, pageWidth - margin * 2, 36, "F");
+    // Specifications - refined grid
+    doc.setFillColor(250, 250, 252);
+    doc.roundedRect(margin, yPos, pageWidth - margin * 2, 32, 2, 2, "F");
+    doc.setDrawColor(235, 235, 240);
+    doc.setLineWidth(0.2);
+    doc.roundedRect(margin, yPos, pageWidth - margin * 2, 32, 2, 2, "S");
 
     const specs = [
       { label: "Erstzulassung", value: format(new Date(car.first_registration_date), "MM/yyyy") },
       { label: "Kilometerstand", value: formatMileage(car.mileage) },
       { label: "Kraftstoff", value: car.fuel_type },
       { label: "Getriebe", value: car.transmission },
-      { label: "Leistung", value: car.power_hp ? `${car.power_hp} PS` : "-" },
-      { label: "Farbe", value: car.color || "-" },
-      { label: "Vorbesitzer", value: car.previous_owners !== null && car.previous_owners !== undefined ? car.previous_owners.toString() : "-" },
+      { label: "Leistung", value: car.power_hp ? `${car.power_hp} PS` : "—" },
+      { label: "Farbe", value: car.color || "—" },
+      { label: "Vorbesitzer", value: car.previous_owners !== null && car.previous_owners !== undefined ? car.previous_owners.toString() : "—" },
     ];
 
     const colWidth = (pageWidth - margin * 2) / 4;
-    let specX = margin + 4;
-    let specY = yPos + 8;
+    let specX = margin + 5;
+    let specY = yPos + 7;
     let specCol = 0;
 
-    doc.setFontSize(8);
-    specs.forEach((spec, idx) => {
+    specs.forEach((spec) => {
+      doc.setFontSize(7);
       doc.setFont("helvetica", "normal");
-      doc.setTextColor(100, 100, 100);
-      doc.text(spec.label, specX, specY);
+      doc.setTextColor(130, 130, 130);
+      doc.text(spec.label.toUpperCase(), specX, specY);
 
+      doc.setFontSize(9);
       doc.setFont("helvetica", "bold");
-      doc.setTextColor(41, 41, 41);
+      doc.setTextColor(50, 50, 50);
       doc.text(spec.value, specX, specY + 5);
 
       specCol++;
       if (specCol === 4) {
         specCol = 0;
-        specX = margin + 4;
-        specY += 16;
+        specX = margin + 5;
+        specY += 14;
       } else {
         specX += colWidth;
       }
     });
 
-    yPos += 42;
+    yPos += 38;
 
     // Description
     if (car.description) {
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(41, 41, 41);
-      doc.text("Beschreibung", margin, yPos);
-      yPos += 5;
-
       doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(50, 50, 50);
+      doc.text("Beschreibung", margin, yPos);
+      yPos += 4;
+
+      doc.setFontSize(8);
       doc.setFont("helvetica", "normal");
-      doc.setTextColor(60, 60, 60);
+      doc.setTextColor(70, 70, 70);
       const descLines = doc.splitTextToSize(car.description, pageWidth - margin * 2);
-      doc.text(descLines.slice(0, 4), margin, yPos); // Max 4 lines
-      yPos += Math.min(descLines.length, 4) * 4 + 4;
+      doc.text(descLines.slice(0, 3), margin, yPos);
+      yPos += Math.min(descLines.length, 3) * 3.5 + 4;
     }
 
     // Features
     if (car.features && car.features.length > 0) {
-      doc.setFontSize(10);
+      doc.setFontSize(9);
       doc.setFont("helvetica", "bold");
-      doc.setTextColor(41, 41, 41);
+      doc.setTextColor(50, 50, 50);
       doc.text("Ausstattung", margin, yPos);
-      yPos += 5;
+      yPos += 4;
 
       doc.setFontSize(8);
       doc.setFont("helvetica", "normal");
-      doc.setTextColor(60, 60, 60);
-
-      const featuresText = car.features.join(" • ");
+      doc.setTextColor(70, 70, 70);
+      const featuresText = car.features.join("  •  ");
       const featureLines = doc.splitTextToSize(featuresText, pageWidth - margin * 2);
-      doc.text(featureLines.slice(0, 2), margin, yPos); // Max 2 lines
-      yPos += Math.min(featureLines.length, 2) * 4 + 4;
+      doc.text(featureLines.slice(0, 2), margin, yPos);
+      yPos += Math.min(featureLines.length, 2) * 3.5 + 3;
     }
 
-    // Guarantee box
-    doc.setFillColor(240, 249, 240);
-    doc.setDrawColor(34, 139, 34);
-    doc.roundedRect(margin, yPos, pageWidth - margin * 2, 14, 2, 2, "FD");
+    // Guarantee box - compact and elegant
+    const boxWidth = pageWidth - margin * 2;
+    doc.setFillColor(245, 252, 245);
+    doc.setDrawColor(180, 210, 180);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(margin, yPos, boxWidth, 10, 2, 2, "FD");
 
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(34, 139, 34);
-    doc.text("✓ Technischer Zustand vertraglich garantiert", margin + 4, yPos + 5);
+    doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
-    doc.text("✓ Keine zusätzlichen Käuferkosten", margin + 4, yPos + 10);
-
+    doc.setTextColor(46, 125, 50);
+    
+    let guaranteeText = "✓ Technischer Zustand garantiert   •   ✓ Keine Käuferkosten";
     if (car.vat_deductible) {
-      doc.text("✓ MwSt. ausweisbar (19%)", pageWidth / 2, yPos + 5);
+      guaranteeText += "   •   ✓ MwSt. ausweisbar (19%)";
     }
+    doc.text(guaranteeText, pageWidth / 2, yPos + 6, { align: "center" });
   }
 
   // Add footers to all pages
