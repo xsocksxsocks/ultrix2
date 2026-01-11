@@ -1,4 +1,5 @@
 import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
 
 interface Car {
@@ -21,14 +22,14 @@ interface Car {
   features?: string[] | null;
 }
 
-const LOGO_URL = "https://ultrix-kfz.net/assets/ultrix-logo-CiviPjmU.png";
+const LOGO_URL = "/images/ultrix-logo.png";
 
-const formatPrice = (price: number, includeBrutto: boolean = false) => {
+const formatPrice = (price: number) => {
   const formatted = new Intl.NumberFormat("de-DE", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(price);
-  return `${formatted} €${includeBrutto ? " brutto" : ""}`
+  return `${formatted} € brutto`;
 };
 
 const formatMileage = (mileage: number) =>
@@ -61,22 +62,22 @@ const loadImageAsBase64 = (url: string): Promise<string | null> => {
   });
 };
 
-const addHeader = async (doc: jsPDF, pageWidth: number, margin: number, logoData: string | null) => {
+const addHeader = (doc: jsPDF, pageWidth: number, margin: number, logoData: string | null) => {
   // Logo
   if (logoData) {
     try {
-      doc.addImage(logoData, "PNG", margin, 6, 36, 16, undefined, "MEDIUM");
+      doc.addImage(logoData, "PNG", margin, 8, 32, 14, undefined, "MEDIUM");
     } catch {
-      doc.setFontSize(18);
+      doc.setFontSize(16);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(41, 41, 41);
-      doc.text("ULTRIX", margin, 18);
+      doc.text("ULTRIX", margin, 16);
     }
   } else {
-    doc.setFontSize(18);
+    doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(41, 41, 41);
-    doc.text("ULTRIX", margin, 18);
+    doc.text("ULTRIX", margin, 16);
   }
 
   // Company details on the right
@@ -86,20 +87,19 @@ const addHeader = async (doc: jsPDF, pageWidth: number, margin: number, logoData
   const rightAlign = pageWidth - margin;
   doc.text("ULTRIX UG (haftungsbeschränkt)", rightAlign, 10, { align: "right" });
   doc.text("Weihgartenstr. 19 • 68519 Viernheim", rightAlign, 14, { align: "right" });
-  doc.setTextColor(100, 100, 100);
-  doc.text("+49 6204 6129035", rightAlign, 19, { align: "right" });
-  doc.text("kontakt@ultrix-kfz.net", rightAlign, 23, { align: "right" });
+  doc.text("+49 6204 6129035 • kontakt@ultrix-kfz.net", rightAlign, 18, { align: "right" });
+  doc.text("USt-IdNr.: DE303256085", rightAlign, 22, { align: "right" });
 
-  // Elegant separator line
+  // Separator line
   doc.setDrawColor(200, 200, 200);
-  doc.setLineWidth(0.2);
+  doc.setLineWidth(0.3);
   doc.line(margin, 26, pageWidth - margin, 26);
 };
 
 const addFooter = (doc: jsPDF, pageWidth: number, pageHeight: number, pageNumber: number, totalPages: number) => {
-  doc.setDrawColor(220, 220, 220);
+  doc.setDrawColor(200, 200, 200);
   doc.setLineWidth(0.2);
-  doc.line(14, pageHeight - 16, pageWidth - 14, pageHeight - 16);
+  doc.line(14, pageHeight - 18, pageWidth - 14, pageHeight - 18);
 
   doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
@@ -107,15 +107,126 @@ const addFooter = (doc: jsPDF, pageWidth: number, pageHeight: number, pageNumber
   doc.text(
     `Seite ${pageNumber} von ${totalPages}`,
     pageWidth / 2,
-    pageHeight - 11,
+    pageHeight - 13,
     { align: "center" }
   );
   doc.text(
-    "ULTRIX UG • Weihgartenstr. 19 • 68519 Viernheim • +49 6204 6129035",
+    "ULTRIX UG (haftungsbeschränkt) • Weihgartenstr. 19 • 68519 Viernheim",
     pageWidth / 2,
-    pageHeight - 7,
+    pageHeight - 9,
     { align: "center" }
   );
+  doc.text(
+    "+49 6204 6129035 • kontakt@ultrix-kfz.net • USt-IdNr.: DE303256085",
+    pageWidth / 2,
+    pageHeight - 5,
+    { align: "center" }
+  );
+};
+
+const addCoverPage = (doc: jsPDF, pageWidth: number, pageHeight: number, margin: number, logoData: string | null, carCount: number) => {
+  // Logo centered at top
+  if (logoData) {
+    try {
+      doc.addImage(logoData, "PNG", pageWidth / 2 - 30, 25, 60, 26, undefined, "MEDIUM");
+    } catch {
+      doc.setFontSize(28);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(41, 41, 41);
+      doc.text("ULTRIX", pageWidth / 2, 40, { align: "center" });
+    }
+  }
+
+  // Main title
+  doc.setFontSize(20);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(35, 35, 35);
+  doc.text("Fahrzeugvermittlung mit Garantie", pageWidth / 2, 70, { align: "center" });
+
+  // Date and count
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(100, 100, 100);
+  doc.text(`Stand: ${format(new Date(), "dd.MM.yyyy")} • ${carCount} Fahrzeuge verfügbar`, pageWidth / 2, 80, { align: "center" });
+
+  // Decorative line
+  doc.setDrawColor(34, 197, 94);
+  doc.setLineWidth(1);
+  doc.line(pageWidth / 2 - 40, 88, pageWidth / 2 + 40, 88);
+
+  // Main description text
+  let yPos = 100;
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(60, 60, 60);
+  
+  const descText = "Wir vermitteln Fahrzeuge im Kundenauftrag. Jedes Fahrzeug durchläuft vor dem Verkauf unsere umfassende technische Prüfung. Den Fahrzeugzustand garantieren wir Ihnen vertraglich – ohne versteckte Kosten oder zusätzliche Gebühren für Sie als Käufer.";
+  const descLines = doc.splitTextToSize(descText, pageWidth - margin * 4);
+  doc.text(descLines, pageWidth / 2, yPos, { align: "center" });
+  
+  yPos += descLines.length * 5 + 15;
+
+  // Feature boxes - 2 columns, 4 rows
+  const features = [
+    { title: "Technisch geprüft", desc: "Umfassende Inspektion" },
+    { title: "Zustandsgarantie", desc: "Vertraglich gesichert" },
+    { title: "Keine Zusatzkosten", desc: "Faire Preise" },
+    { title: "Geprüfte Historie", desc: "Transparente Herkunft" },
+  ];
+
+  const boxWidth = (pageWidth - margin * 2 - 10) / 2;
+  const boxHeight = 20;
+  const boxGap = 8;
+
+  features.forEach((feature, idx) => {
+    const col = idx % 2;
+    const row = Math.floor(idx / 2);
+    const boxX = margin + col * (boxWidth + 10);
+    const boxY = yPos + row * (boxHeight + boxGap);
+
+    // Box background
+    doc.setFillColor(240, 253, 244);
+    doc.roundedRect(boxX, boxY, boxWidth, boxHeight, 2, 2, "F");
+
+    // Left accent
+    doc.setFillColor(34, 197, 94);
+    doc.roundedRect(boxX, boxY, 3, boxHeight, 1, 1, "F");
+
+    // Checkmark
+    doc.setFontSize(12);
+    doc.setTextColor(34, 197, 94);
+    doc.text("✓", boxX + 8, boxY + 9);
+
+    // Title
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(22, 101, 52);
+    doc.text(feature.title, boxX + 16, boxY + 9);
+
+    // Description
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(80, 80, 80);
+    doc.text(feature.desc, boxX + 16, boxY + 15);
+  });
+
+  yPos += 2 * (boxHeight + boxGap) + 20;
+
+  // Contact info box
+  doc.setFillColor(248, 248, 248);
+  doc.roundedRect(margin, yPos, pageWidth - margin * 2, 35, 2, 2, "F");
+
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(50, 50, 50);
+  doc.text("Kontakt", pageWidth / 2, yPos + 10, { align: "center" });
+
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(70, 70, 70);
+  doc.text("ULTRIX UG (haftungsbeschränkt)", pageWidth / 2, yPos + 18, { align: "center" });
+  doc.text("Weihgartenstr. 19 • 68519 Viernheim", pageWidth / 2, yPos + 24, { align: "center" });
+  doc.text("+49 6204 6129035 • kontakt@ultrix-kfz.net", pageWidth / 2, yPos + 30, { align: "center" });
 };
 
 export const generateStockPdf = async (cars: Car[]) => {
@@ -124,246 +235,155 @@ export const generateStockPdf = async (cars: Car[]) => {
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 14;
 
-  // Load logo from URL
+  // Load logo
   const logoData = await loadImageAsBase64(LOGO_URL);
 
   // Filter only available cars (not sold)
   const availableCars = cars.filter((car) => !car.is_sold);
 
+  // Add cover page
+  addCoverPage(doc, pageWidth, pageHeight, margin, logoData, availableCars.length);
+
   if (availableCars.length === 0) {
-    await addHeader(doc, pageWidth, margin, logoData);
-    doc.setFontSize(14);
-    doc.setTextColor(100, 100, 100);
-    doc.text("Derzeit keine Fahrzeuge im Angebot.", pageWidth / 2, 80, { align: "center" });
-    addFooter(doc, pageWidth, pageHeight, 1, 1);
+    const totalPages = doc.getNumberOfPages();
+    for (let p = 1; p <= totalPages; p++) {
+      doc.setPage(p);
+      addFooter(doc, pageWidth, pageHeight, p, totalPages);
+    }
     doc.save(`ULTRIX_Fahrzeugbestand_${format(new Date(), "yyyy-MM-dd")}.pdf`);
     return;
   }
 
-  // Process each car
-  for (let i = 0; i < availableCars.length; i++) {
-    const car = availableCars[i];
+  // Add new page for table
+  doc.addPage();
+  addHeader(doc, pageWidth, margin, logoData);
 
-    if (i > 0) {
-      doc.addPage();
-    }
+  // Build table data
+  const tableData = availableCars.map((car) => [
+    `${car.brand} ${car.model}`,
+    format(new Date(car.first_registration_date), "MM/yyyy"),
+    formatMileage(car.mileage),
+    car.power_hp ? `${car.power_hp} PS` : "—",
+    car.fuel_type,
+    car.transmission,
+    car.previous_owners !== null && car.previous_owners !== undefined ? car.previous_owners.toString() : "—",
+    car.vat_deductible ? "Ja" : "Nein",
+    formatPrice(car.price),
+    car.is_reserved ? "Reserviert" : "Verfügbar",
+  ]);
 
-    await addHeader(doc, pageWidth, margin, logoData);
-
-    let yPos = 32;
-
-    // Car title with subtle background
-    doc.setFillColor(250, 250, 250);
-    doc.roundedRect(margin, yPos - 4, pageWidth - margin * 2, 12, 1, 1, "F");
-    
-    doc.setFontSize(15);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(35, 35, 35);
-    doc.text(`${car.brand} ${car.model}`, margin + 3, yPos + 3);
-
-    // Status badge
-    if (car.is_reserved) {
-      doc.setFillColor(245, 158, 11);
-      doc.roundedRect(pageWidth - margin - 26, yPos - 2, 24, 6, 1, 1, "F");
-      doc.setFontSize(7);
-      doc.setTextColor(255, 255, 255);
-      doc.text("RESERVIERT", pageWidth - margin - 14, yPos + 2, { align: "center" });
-    }
-
-    yPos += 14;
-
-    // Price section
-    doc.setFillColor(248, 248, 248);
-    doc.roundedRect(margin, yPos - 3, pageWidth - margin * 2, 11, 1, 1, "F");
-
-    doc.setFontSize(18);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(35, 35, 35);
-    const priceText = formatPrice(car.price, true);
-    doc.text(priceText, margin + 4, yPos + 4);
-
-    // VAT info
-    if (car.vat_deductible) {
-      doc.setFontSize(9);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(46, 125, 50);
-      doc.text("• MwSt. ausweisbar", margin + 4 + doc.getTextWidth(priceText) + 3, yPos + 4);
-    }
-
-    yPos += 14;
-
-    // Load main image
-    const mainImageUrl = car.images?.[0];
-    let mainImageLoaded = false;
-
-    if (mainImageUrl) {
-      const imgData = await loadImageAsBase64(mainImageUrl);
-      if (imgData) {
-        try {
-          const imgWidth = pageWidth - margin * 2;
-          const imgHeight = 65;
-          
-          doc.addImage(imgData, "JPEG", margin, yPos, imgWidth, imgHeight, undefined, "MEDIUM");
-          
-          doc.setDrawColor(220, 220, 220);
-          doc.setLineWidth(0.3);
-          doc.roundedRect(margin, yPos, imgWidth, imgHeight, 2, 2, "S");
-          
-          mainImageLoaded = true;
-          yPos += imgHeight + 3;
-        } catch (e) {
-          console.error("Failed to add main image:", e);
-        }
+  // Create table
+  autoTable(doc, {
+    startY: 32,
+    head: [[
+      "Fahrzeug",
+      "EZ",
+      "Kilometer",
+      "Leistung",
+      "Kraftstoff",
+      "Getriebe",
+      "VB",
+      "MwSt.",
+      "Preis",
+      "Status",
+    ]],
+    body: tableData,
+    theme: "grid",
+    headStyles: {
+      fillColor: [34, 197, 94],
+      textColor: [255, 255, 255],
+      fontSize: 8,
+      fontStyle: "bold",
+      halign: "center",
+      valign: "middle",
+      cellPadding: 3,
+    },
+    bodyStyles: {
+      fontSize: 8,
+      textColor: [50, 50, 50],
+      cellPadding: 2.5,
+      valign: "middle",
+    },
+    alternateRowStyles: {
+      fillColor: [248, 250, 252],
+    },
+    columnStyles: {
+      0: { fontStyle: "bold", cellWidth: 35 },
+      1: { halign: "center", cellWidth: 16 },
+      2: { halign: "right", cellWidth: 22 },
+      3: { halign: "center", cellWidth: 16 },
+      4: { halign: "center", cellWidth: 18 },
+      5: { halign: "center", cellWidth: 18 },
+      6: { halign: "center", cellWidth: 10 },
+      7: { halign: "center", cellWidth: 12 },
+      8: { halign: "right", fontStyle: "bold", cellWidth: 28 },
+      9: { halign: "center", cellWidth: 18 },
+    },
+    margin: { left: margin, right: margin },
+    didDrawPage: (data) => {
+      // Add header on each page (except the page where autoTable already drew)
+      if (data.pageNumber > 1) {
+        addHeader(doc, pageWidth, margin, logoData);
       }
-    }
-
-    if (!mainImageLoaded) {
-      doc.setFillColor(245, 245, 245);
-      doc.roundedRect(margin, yPos, pageWidth - margin * 2, 65, 2, 2, "F");
-      doc.setFontSize(11);
-      doc.setTextColor(170, 170, 170);
-      doc.text("Kein Bild verfügbar", pageWidth / 2, yPos + 32, { align: "center" });
-      yPos += 68;
-    }
-
-    // Thumbnail images (up to 4)
-    const thumbnails = car.images?.slice(1, 5) || [];
-    if (thumbnails.length > 0) {
-      const thumbWidth = (pageWidth - margin * 2 - 6) / 4;
-      const thumbHeight = 26;
-      let thumbX = margin;
-
-      for (const thumbUrl of thumbnails) {
-        const thumbData = await loadImageAsBase64(thumbUrl);
-        if (thumbData) {
-          try {
-            doc.addImage(thumbData, "JPEG", thumbX, yPos, thumbWidth, thumbHeight, undefined, "MEDIUM");
-            doc.setDrawColor(230, 230, 230);
-            doc.setLineWidth(0.2);
-            doc.roundedRect(thumbX, yPos, thumbWidth, thumbHeight, 1, 1, "S");
-          } catch {
-            doc.setFillColor(248, 248, 248);
-            doc.roundedRect(thumbX, yPos, thumbWidth, thumbHeight, 1, 1, "F");
-          }
+    },
+    didParseCell: (data) => {
+      // Style status column
+      if (data.section === "body" && data.column.index === 9) {
+        if (data.cell.raw === "Reserviert") {
+          data.cell.styles.textColor = [245, 158, 11];
+          data.cell.styles.fontStyle = "bold";
         } else {
-          doc.setFillColor(248, 248, 248);
-          doc.roundedRect(thumbX, yPos, thumbWidth, thumbHeight, 1, 1, "F");
+          data.cell.styles.textColor = [34, 197, 94];
         }
-        thumbX += thumbWidth + 2;
       }
-      yPos += thumbHeight + 5;
-    }
-
-    // Specifications grid
-    doc.setFillColor(252, 252, 254);
-    doc.roundedRect(margin, yPos, pageWidth - margin * 2, 32, 2, 2, "F");
-    doc.setDrawColor(235, 235, 240);
-    doc.setLineWidth(0.2);
-    doc.roundedRect(margin, yPos, pageWidth - margin * 2, 32, 2, 2, "S");
-
-    const specs = [
-      { label: "Erstzulassung", value: format(new Date(car.first_registration_date), "MM/yyyy") },
-      { label: "Kilometerstand", value: formatMileage(car.mileage) },
-      { label: "Kraftstoff", value: car.fuel_type },
-      { label: "Getriebe", value: car.transmission },
-      { label: "Leistung", value: car.power_hp ? `${car.power_hp} PS` : "—" },
-      { label: "Farbe", value: car.color || "—" },
-      { label: "Vorbesitzer", value: car.previous_owners !== null && car.previous_owners !== undefined ? car.previous_owners.toString() : "—" },
-    ];
-
-    const colWidth = (pageWidth - margin * 2) / 4;
-    let specX = margin + 5;
-    let specY = yPos + 7;
-    let specCol = 0;
-
-    specs.forEach((spec) => {
-      doc.setFontSize(7);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(130, 130, 130);
-      doc.text(spec.label.toUpperCase(), specX, specY);
-
-      doc.setFontSize(9);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(50, 50, 50);
-      doc.text(spec.value, specX, specY + 5);
-
-      specCol++;
-      if (specCol === 4) {
-        specCol = 0;
-        specX = margin + 5;
-        specY += 14;
-      } else {
-        specX += colWidth;
+      // Style MwSt column
+      if (data.section === "body" && data.column.index === 7) {
+        if (data.cell.raw === "Ja") {
+          data.cell.styles.textColor = [34, 197, 94];
+          data.cell.styles.fontStyle = "bold";
+        }
       }
-    });
+    },
+  });
 
-    yPos += 38;
+  // Add guarantee info below table
+  const finalY = (doc as any).lastAutoTable?.finalY || 150;
+  let yPos = finalY + 10;
 
-    // Description
-    if (car.description) {
-      doc.setFontSize(9);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(50, 50, 50);
-      doc.text("Beschreibung", margin, yPos);
-      yPos += 4;
-
-      doc.setFontSize(8);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(70, 70, 70);
-      const descLines = doc.splitTextToSize(car.description, pageWidth - margin * 2);
-      doc.text(descLines.slice(0, 3), margin, yPos);
-      yPos += Math.min(descLines.length, 3) * 3.5 + 4;
-    }
-
-    // Features
-    if (car.features && car.features.length > 0) {
-      doc.setFontSize(9);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(50, 50, 50);
-      doc.text("Ausstattung", margin, yPos);
-      yPos += 4;
-
-      doc.setFontSize(8);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(70, 70, 70);
-      const featuresText = car.features.join("  •  ");
-      const featureLines = doc.splitTextToSize(featuresText, pageWidth - margin * 2);
-      doc.text(featureLines.slice(0, 2), margin, yPos);
-      yPos += Math.min(featureLines.length, 2) * 3.5 + 3;
-    }
-
-    // Guarantee section - vertically stacked badges
-    const badgeHeight = 7;
-    const badgeGap = 2;
-    const badges = [
-      { text: "Technischer Zustand garantiert", icon: "✓" },
-      { text: "Keine zusätzlichen Käuferkosten", icon: "✓" },
-    ];
-    
-    if (car.vat_deductible) {
-      badges.push({ text: "MwSt. ausweisbar (19%)", icon: "✓" });
-    }
-
-    const badgeWidth = pageWidth - margin * 2;
-
-    badges.forEach((badge, idx) => {
-      const badgeY = yPos + idx * (badgeHeight + badgeGap);
-      
-      // Badge background
-      doc.setFillColor(240, 253, 244);
-      doc.roundedRect(margin, badgeY, badgeWidth, badgeHeight, 1.5, 1.5, "F");
-      
-      // Left accent bar
-      doc.setFillColor(34, 197, 94);
-      doc.roundedRect(margin, badgeY, 2.5, badgeHeight, 1, 1, "F");
-      
-      // Text
-      doc.setFontSize(8);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(22, 101, 52);
-      doc.text(`${badge.icon} ${badge.text}`, margin + 6, badgeY + 5);
-    });
+  // Check if we need a new page for guarantees
+  if (yPos > pageHeight - 50) {
+    doc.addPage();
+    addHeader(doc, pageWidth, margin, logoData);
+    yPos = 35;
   }
+
+  // Guarantee badges - vertically stacked
+  const badges = [
+    { text: "Technischer Zustand garantiert", icon: "✓" },
+    { text: "Keine zusätzlichen Käuferkosten", icon: "✓" },
+  ];
+
+  const badgeHeight = 8;
+  const badgeGap = 3;
+  const badgeWidth = pageWidth - margin * 2;
+
+  badges.forEach((badge, idx) => {
+    const badgeY = yPos + idx * (badgeHeight + badgeGap);
+
+    // Badge background
+    doc.setFillColor(240, 253, 244);
+    doc.roundedRect(margin, badgeY, badgeWidth, badgeHeight, 2, 2, "F");
+
+    // Left accent bar
+    doc.setFillColor(34, 197, 94);
+    doc.roundedRect(margin, badgeY, 3, badgeHeight, 1, 1, "F");
+
+    // Text
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(22, 101, 52);
+    doc.text(`${badge.icon} ${badge.text}`, margin + 7, badgeY + 5.5);
+  });
 
   // Add footers to all pages
   const totalPages = doc.getNumberOfPages();
