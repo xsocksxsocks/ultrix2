@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { LogOut, Mail, Car, HandCoins, Eye, Trash2, Plus, X, Upload, Check, ShoppingCart, Pencil, StickyNote, ChevronLeft, ChevronRight, CalendarDays, Download } from "lucide-react";
+import { LogOut, Mail, Car, HandCoins, Eye, Trash2, Plus, X, Upload, Check, ShoppingCart, Pencil, StickyNote, ChevronLeft, ChevronRight, CalendarDays, Download, Archive, AlertTriangle } from "lucide-react";
 import { generateStockPdf } from "@/utils/generateStockPdf";
 import AppointmentCalendar from "@/components/admin/AppointmentCalendar";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -17,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { MonthYearPicker } from "@/components/ui/month-year-picker";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -30,10 +32,11 @@ const Admin = () => {
   const [selectedInquiry, setSelectedInquiry] = useState<any>(null);
   const [newCarImages, setNewCarImages] = useState<File[]>([]);
   const [editCarImages, setEditCarImages] = useState<File[]>([]);
+  const [newCarRegistrationDate, setNewCarRegistrationDate] = useState<Date | undefined>();
+  const [editCarRegistrationDate, setEditCarRegistrationDate] = useState<Date | undefined>();
   const [newCarData, setNewCarData] = useState({
     brand: "",
     model: "",
-    first_registration_date: "",
     mileage: "",
     fuel_type: "",
     transmission: "",
@@ -49,7 +52,6 @@ const Admin = () => {
   const [editCarData, setEditCarData] = useState({
     brand: "",
     model: "",
-    first_registration_date: "",
     mileage: "",
     fuel_type: "",
     transmission: "",
@@ -95,13 +97,14 @@ const Admin = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  // Fetch data
+  // Fetch data - active items
   const { data: contactRequests } = useQuery({
     queryKey: ["admin-contacts"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("contact_requests")
         .select("*")
+        .is("deleted_at", null)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
@@ -114,6 +117,7 @@ const Admin = () => {
       const { data, error } = await supabase
         .from("car_sell_requests")
         .select("*")
+        .is("deleted_at", null)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
@@ -126,6 +130,7 @@ const Admin = () => {
       const { data, error } = await supabase
         .from("car_inquiries")
         .select("*")
+        .is("deleted_at", null)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
@@ -138,7 +143,61 @@ const Admin = () => {
       const { data, error } = await supabase
         .from("cars_for_sale")
         .select("*")
+        .is("deleted_at", null)
         .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Fetch deleted/archived items
+  const { data: deletedContacts } = useQuery({
+    queryKey: ["admin-contacts-deleted"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("contact_requests")
+        .select("*")
+        .not("deleted_at", "is", null)
+        .order("deleted_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: deletedSellRequests } = useQuery({
+    queryKey: ["admin-sell-requests-deleted"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("car_sell_requests")
+        .select("*")
+        .not("deleted_at", "is", null)
+        .order("deleted_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: deletedCarInquiries } = useQuery({
+    queryKey: ["admin-car-inquiries-deleted"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("car_inquiries")
+        .select("*")
+        .not("deleted_at", "is", null)
+        .order("deleted_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: deletedCars } = useQuery({
+    queryKey: ["admin-cars-deleted"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("cars_for_sale")
+        .select("*")
+        .not("deleted_at", "is", null)
+        .order("deleted_at", { ascending: false });
       if (error) throw error;
       return data;
     },
@@ -156,14 +215,39 @@ const Admin = () => {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-contacts"] }),
   });
 
-  const deleteContact = useMutation({
+  // Soft delete mutations
+  const softDeleteContact = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("contact_requests").update({ deleted_at: new Date().toISOString() }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-contacts"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-contacts-deleted"] });
+      toast({ title: "In Archiv verschoben" });
+    },
+  });
+
+  const hardDeleteContact = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("contact_requests").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-contacts-deleted"] });
+      toast({ title: "Endgültig gelöscht" });
+    },
+  });
+
+  const restoreContact = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("contact_requests").update({ deleted_at: null }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-contacts"] });
-      toast({ title: "Anfrage gelöscht" });
+      queryClient.invalidateQueries({ queryKey: ["admin-contacts-deleted"] });
+      toast({ title: "Wiederhergestellt" });
     },
   });
 
@@ -220,14 +304,38 @@ const Admin = () => {
     },
   });
 
-  const deleteSellRequest = useMutation({
+  const softDeleteSellRequest = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("car_sell_requests").update({ deleted_at: new Date().toISOString() }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-sell-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-sell-requests-deleted"] });
+      toast({ title: "In Archiv verschoben" });
+    },
+  });
+
+  const hardDeleteSellRequest = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("car_sell_requests").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-sell-requests-deleted"] });
+      toast({ title: "Endgültig gelöscht" });
+    },
+  });
+
+  const restoreSellRequest = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("car_sell_requests").update({ deleted_at: null }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-sell-requests"] });
-      toast({ title: "Anfrage gelöscht" });
+      queryClient.invalidateQueries({ queryKey: ["admin-sell-requests-deleted"] });
+      toast({ title: "Wiederhergestellt" });
     },
   });
 
@@ -256,25 +364,73 @@ const Admin = () => {
     },
   });
 
-  const deleteCarInquiry = useMutation({
+  const softDeleteCarInquiry = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("car_inquiries").update({ deleted_at: new Date().toISOString() }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-car-inquiries"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-car-inquiries-deleted"] });
+      toast({ title: "In Archiv verschoben" });
+    },
+  });
+
+  const hardDeleteCarInquiry = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("car_inquiries").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-car-inquiries"] });
-      toast({ title: "Anfrage gelöscht" });
+      queryClient.invalidateQueries({ queryKey: ["admin-car-inquiries-deleted"] });
+      toast({ title: "Endgültig gelöscht" });
     },
   });
 
-  const deleteCar = useMutation({
+  const restoreCarInquiry = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("car_inquiries").update({ deleted_at: null }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-car-inquiries"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-car-inquiries-deleted"] });
+      toast({ title: "Wiederhergestellt" });
+    },
+  });
+
+  const softDeleteCar = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("cars_for_sale").update({ deleted_at: new Date().toISOString() }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-cars"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-cars-deleted"] });
+      toast({ title: "In Archiv verschoben" });
+    },
+  });
+
+  const hardDeleteCar = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("cars_for_sale").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-cars-deleted"] });
+      toast({ title: "Endgültig gelöscht" });
+    },
+  });
+
+  const restoreCar = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("cars_for_sale").update({ deleted_at: null }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-cars"] });
-      toast({ title: "Fahrzeug gelöscht" });
+      queryClient.invalidateQueries({ queryKey: ["admin-cars-deleted"] });
+      toast({ title: "Wiederhergestellt" });
     },
   });
 
@@ -321,6 +477,15 @@ const Admin = () => {
       return;
     }
 
+    if (!newCarRegistrationDate) {
+      toast({
+        title: "Erstzulassung erforderlich",
+        description: "Bitte wählen Sie ein Erstzulassungsdatum.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const imageUrls: string[] = [];
       for (const image of newCarImages) {
@@ -337,7 +502,7 @@ const Admin = () => {
       const { error } = await supabase.from("cars_for_sale").insert({
         brand: newCarData.brand,
         model: newCarData.model,
-        first_registration_date: newCarData.first_registration_date,
+        first_registration_date: format(newCarRegistrationDate, "yyyy-MM-dd"),
         mileage: parseInt(newCarData.mileage),
         fuel_type: newCarData.fuel_type,
         transmission: newCarData.transmission,
@@ -357,8 +522,9 @@ const Admin = () => {
       toast({ title: "Fahrzeug hinzugefügt" });
       setIsAddCarOpen(false);
       setNewCarImages([]);
+      setNewCarRegistrationDate(undefined);
       setNewCarData({
-        brand: "", model: "", first_registration_date: "", mileage: "", fuel_type: "", transmission: "",
+        brand: "", model: "", mileage: "", fuel_type: "", transmission: "",
         previous_owners: "", color: "", power_hp: "", price: "", description: "", features: "", is_featured: false, vat_deductible: false,
       });
       queryClient.invalidateQueries({ queryKey: ["admin-cars"] });
@@ -373,6 +539,15 @@ const Admin = () => {
 
   const handleEditCar = async () => {
     if (!editingCar) return;
+
+    if (!editCarRegistrationDate) {
+      toast({
+        title: "Erstzulassung erforderlich",
+        description: "Bitte wählen Sie ein Erstzulassungsdatum.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       let imageUrls = [...editCarData.existingImages];
@@ -403,7 +578,7 @@ const Admin = () => {
         .update({
           brand: editCarData.brand,
           model: editCarData.model,
-          first_registration_date: editCarData.first_registration_date,
+          first_registration_date: format(editCarRegistrationDate, "yyyy-MM-dd"),
           mileage: parseInt(editCarData.mileage),
           fuel_type: editCarData.fuel_type,
           transmission: editCarData.transmission,
@@ -425,6 +600,7 @@ const Admin = () => {
       setIsEditCarOpen(false);
       setEditingCar(null);
       setEditCarImages([]);
+      setEditCarRegistrationDate(undefined);
       queryClient.invalidateQueries({ queryKey: ["admin-cars"] });
     } catch (error: any) {
       toast({
@@ -437,10 +613,10 @@ const Admin = () => {
 
   const openEditDialog = (car: any) => {
     setEditingCar(car);
+    setEditCarRegistrationDate(new Date(car.first_registration_date));
     setEditCarData({
       brand: car.brand,
       model: car.model,
-      first_registration_date: car.first_registration_date,
       mileage: car.mileage.toString(),
       fuel_type: car.fuel_type,
       transmission: car.transmission,
@@ -473,6 +649,7 @@ const Admin = () => {
   const unreadContacts = contactRequests?.filter(c => !c.is_read).length || 0;
   const unreadSellRequests = sellRequests?.filter(s => !s.is_read).length || 0;
   const unreadCarInquiries = carInquiries?.filter(i => !i.is_read).length || 0;
+  const archivedCount = (deletedContacts?.length || 0) + (deletedSellRequests?.length || 0) + (deletedCarInquiries?.length || 0) + (deletedCars?.length || 0);
 
   return (
     <div className="min-h-screen bg-background">
@@ -495,7 +672,7 @@ const Admin = () => {
       {/* Content */}
       <main className="section-container py-8">
         <Tabs defaultValue="calendar" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="calendar" className="relative">
               <CalendarDays className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Termine</span>
@@ -524,6 +701,13 @@ const Admin = () => {
             <TabsTrigger value="cars">
               <Car className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Fahrzeuge</span>
+            </TabsTrigger>
+            <TabsTrigger value="archive" className="relative">
+              <Archive className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Archiv</span>
+              {archivedCount > 0 && (
+                <Badge className="ml-2 bg-muted-foreground">{archivedCount}</Badge>
+              )}
             </TabsTrigger>
           </TabsList>
 
@@ -573,9 +757,27 @@ const Admin = () => {
                                 <Check className="h-4 w-4" />
                               </Button>
                             )}
-                            <Button size="sm" variant="destructive" onClick={() => deleteCarInquiry.mutate(inquiry.id)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="sm" variant="destructive">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Anfrage archivieren?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Die Anfrage wird ins Archiv verschoben. Sie können sie dort wiederherstellen oder endgültig löschen.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => softDeleteCarInquiry.mutate(inquiry.id)}>
+                                    Archivieren
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </div>
                         </div>
                         {inquiry.notes && (
@@ -630,9 +832,27 @@ const Admin = () => {
                                 <Check className="h-4 w-4" />
                               </Button>
                             )}
-                            <Button size="sm" variant="destructive" onClick={() => deleteContact.mutate(contact.id)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="sm" variant="destructive">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Anfrage archivieren?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Die Anfrage wird ins Archiv verschoben. Sie können sie dort wiederherstellen oder endgültig löschen.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => softDeleteContact.mutate(contact.id)}>
+                                    Archivieren
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </div>
                         </div>
                         {contact.notes && (
@@ -692,9 +912,27 @@ const Admin = () => {
                             }}>
                               <Eye className="h-4 w-4" />
                             </Button>
-                            <Button size="sm" variant="destructive" onClick={() => deleteSellRequest.mutate(request.id)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="sm" variant="destructive">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Anfrage archivieren?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Die Anfrage wird ins Archiv verschoben. Sie können sie dort wiederherstellen oder endgültig löschen.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => softDeleteSellRequest.mutate(request.id)}>
+                                    Archivieren
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </div>
                         </div>
                         {request.notes && (
@@ -782,9 +1020,27 @@ const Admin = () => {
                             >
                               {car.is_sold ? "Verkauft" : "Verkauft"}
                             </Button>
-                            <Button size="sm" variant="destructive" onClick={() => deleteCar.mutate(car.id)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="sm" variant="destructive">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Fahrzeug archivieren?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Das Fahrzeug wird ins Archiv verschoben und ist nicht mehr öffentlich sichtbar. Sie können es dort wiederherstellen oder endgültig löschen.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => softDeleteCar.mutate(car.id)}>
+                                    Archivieren
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </div>
                         </div>
                       </div>
@@ -792,6 +1048,212 @@ const Admin = () => {
                   </div>
                 ) : (
                   <p className="text-muted-foreground text-center py-8">Keine Fahrzeuge vorhanden.</p>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Archive Tab */}
+          <TabsContent value="archive">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Archive className="h-5 w-5" />
+                  Archiv
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-8">
+                {/* Archived Car Inquiries */}
+                {deletedCarInquiries && deletedCarInquiries.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold mb-4">Kaufanfragen</h3>
+                    <div className="space-y-2">
+                      {deletedCarInquiries.map((inquiry) => (
+                        <div key={inquiry.id} className="p-3 border rounded-lg bg-muted/50 flex items-center justify-between">
+                          <div>
+                            <p className="font-medium">{inquiry.car_brand} {inquiry.car_model}</p>
+                            <p className="text-sm text-muted-foreground">{inquiry.customer_name} • {inquiry.customer_email}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" onClick={() => restoreCarInquiry.mutate(inquiry.id)}>
+                              Wiederherstellen
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="sm" variant="destructive">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle className="flex items-center gap-2">
+                                    <AlertTriangle className="h-5 w-5 text-destructive" />
+                                    Endgültig löschen?
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Diese Aktion kann nicht rückgängig gemacht werden. Die Anfrage wird unwiderruflich gelöscht.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                                  <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => hardDeleteCarInquiry.mutate(inquiry.id)}>
+                                    Endgültig löschen
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Archived Contacts */}
+                {deletedContacts && deletedContacts.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold mb-4">Kontaktanfragen</h3>
+                    <div className="space-y-2">
+                      {deletedContacts.map((contact) => (
+                        <div key={contact.id} className="p-3 border rounded-lg bg-muted/50 flex items-center justify-between">
+                          <div>
+                            <p className="font-medium">{contact.name}</p>
+                            <p className="text-sm text-muted-foreground">{contact.email}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" onClick={() => restoreContact.mutate(contact.id)}>
+                              Wiederherstellen
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="sm" variant="destructive">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle className="flex items-center gap-2">
+                                    <AlertTriangle className="h-5 w-5 text-destructive" />
+                                    Endgültig löschen?
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Diese Aktion kann nicht rückgängig gemacht werden. Die Anfrage wird unwiderruflich gelöscht.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                                  <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => hardDeleteContact.mutate(contact.id)}>
+                                    Endgültig löschen
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Archived Sell Requests */}
+                {deletedSellRequests && deletedSellRequests.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold mb-4">Verkaufsanfragen</h3>
+                    <div className="space-y-2">
+                      {deletedSellRequests.map((request) => (
+                        <div key={request.id} className="p-3 border rounded-lg bg-muted/50 flex items-center justify-between">
+                          <div>
+                            <p className="font-medium">{request.brand} {request.model}</p>
+                            <p className="text-sm text-muted-foreground">{request.customer_name} • {request.customer_email}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" onClick={() => restoreSellRequest.mutate(request.id)}>
+                              Wiederherstellen
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="sm" variant="destructive">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle className="flex items-center gap-2">
+                                    <AlertTriangle className="h-5 w-5 text-destructive" />
+                                    Endgültig löschen?
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Diese Aktion kann nicht rückgängig gemacht werden. Die Anfrage wird unwiderruflich gelöscht.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                                  <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => hardDeleteSellRequest.mutate(request.id)}>
+                                    Endgültig löschen
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Archived Cars */}
+                {deletedCars && deletedCars.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold mb-4">Fahrzeuge</h3>
+                    <div className="space-y-2">
+                      {deletedCars.map((car) => (
+                        <div key={car.id} className="p-3 border rounded-lg bg-muted/50 flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            {car.images && car.images[0] && (
+                              <img src={car.images[0]} alt="" className="w-16 h-12 object-cover rounded" />
+                            )}
+                            <div>
+                              <p className="font-medium">{car.brand} {car.model}</p>
+                              <p className="text-sm text-muted-foreground">{formatPrice(car.price)}</p>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" onClick={() => restoreCar.mutate(car.id)}>
+                              Wiederherstellen
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="sm" variant="destructive">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle className="flex items-center gap-2">
+                                    <AlertTriangle className="h-5 w-5 text-destructive" />
+                                    Endgültig löschen?
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Diese Aktion kann nicht rückgängig gemacht werden. Das Fahrzeug und alle zugehörigen Bilder werden unwiderruflich gelöscht.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                                  <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => hardDeleteCar.mutate(car.id)}>
+                                    Endgültig löschen
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {archivedCount === 0 && (
+                  <p className="text-muted-foreground text-center py-8">Das Archiv ist leer.</p>
                 )}
               </CardContent>
             </Card>
@@ -823,8 +1285,12 @@ const Admin = () => {
                 <Input value={newCarData.model} onChange={(e) => setNewCarData({ ...newCarData, model: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>Erstzulassung * (JJJJ-MM-TT)</Label>
-                <Input type="date" value={newCarData.first_registration_date} onChange={(e) => setNewCarData({ ...newCarData, first_registration_date: e.target.value })} />
+                <Label>Erstzulassung *</Label>
+                <MonthYearPicker 
+                  value={newCarRegistrationDate} 
+                  onChange={setNewCarRegistrationDate}
+                  placeholder="Monat/Jahr wählen"
+                />
               </div>
               <div className="space-y-2">
                 <Label>Kilometerstand *</Label>
@@ -968,8 +1434,12 @@ const Admin = () => {
                 <Input value={editCarData.model} onChange={(e) => setEditCarData({ ...editCarData, model: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>Erstzulassung * (JJJJ-MM-TT)</Label>
-                <Input type="date" value={editCarData.first_registration_date} onChange={(e) => setEditCarData({ ...editCarData, first_registration_date: e.target.value })} />
+                <Label>Erstzulassung *</Label>
+                <MonthYearPicker 
+                  value={editCarRegistrationDate} 
+                  onChange={setEditCarRegistrationDate}
+                  placeholder="Monat/Jahr wählen"
+                />
               </div>
               <div className="space-y-2">
                 <Label>Kilometerstand *</Label>
@@ -1242,8 +1712,8 @@ const Admin = () => {
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-muted-foreground">Baujahr</p>
-                    <p className="font-medium">{selectedSellRequest.year}</p>
+                    <p className="text-sm text-muted-foreground">Erstzulassung</p>
+                    <p className="font-medium">{format(new Date(selectedSellRequest.first_registration_date), "MM/yyyy")}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Kilometerstand</p>
