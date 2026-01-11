@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { LogOut, Mail, Car, HandCoins, Eye, Trash2, Plus, X, Upload, Check, ShoppingCart, Pencil, StickyNote, ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
+import { LogOut, Mail, Car, HandCoins, Eye, Trash2, Plus, X, Upload, Check, ShoppingCart, Pencil, StickyNote, ChevronLeft, ChevronRight, CalendarDays, Download } from "lucide-react";
+import { generateStockPdf } from "@/utils/generateStockPdf";
 import AppointmentCalendar from "@/components/admin/AppointmentCalendar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -716,10 +717,16 @@ const Admin = () => {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Fahrzeuge im Angebot</CardTitle>
-                <Button onClick={() => setIsAddCarOpen(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Fahrzeug hinzufügen
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => carsForSale && generateStockPdf(carsForSale)}>
+                    <Download className="h-4 w-4 mr-2" />
+                    PDF Export
+                  </Button>
+                  <Button onClick={() => setIsAddCarOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Fahrzeug hinzufügen
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 {carsForSale && carsForSale.length > 0 ? (
