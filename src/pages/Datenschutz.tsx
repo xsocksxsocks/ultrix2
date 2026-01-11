@@ -99,7 +99,7 @@ const Datenschutz = () => {
                 68519 Viernheim
               </p>
               <p className="mt-4">
-                Telefon: +49 10000000<br />
+                Telefon: +49 6204 6129035<br />
                 E-Mail: kontakt@ultrix-kfz.net
               </p>
             </div>

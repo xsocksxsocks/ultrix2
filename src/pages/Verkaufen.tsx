@@ -580,9 +580,9 @@ const Verkaufen = () => {
                     Rufen Sie uns an – wir beraten Sie gerne.
                   </p>
                   <Button variant="outline" className="w-full" asChild>
-                    <a href="tel:+496204XXXXXX">
+                    <a href="tel:+4962046129035">
                       <Phone className="h-4 w-4 mr-2" />
-                      06204 / XXXXXX
+                      06204 / 6129035
                     </a>
                   </Button>
                 </CardContent>

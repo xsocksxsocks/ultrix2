@@ -32,7 +32,7 @@ const Impressum = () => {
 
             <h3 className="font-heading text-xl font-semibold mt-8 mb-4">Kontakt</h3>
             <p>
-              Telefon: +49 10000000
+              Telefon: +49 6204 6129035
               <br />
               E-Mail: kontakt@ultrix-kfz.net
             </p>
