@@ -29,6 +29,7 @@ interface CarForSale {
   is_sold: boolean;
   is_reserved: boolean;
   is_featured: boolean;
+  vat_deductible: boolean | null;
 }
 
 const Fahrzeuge = () => {
@@ -180,9 +181,14 @@ const Fahrzeuge = () => {
                     <h3 className="font-heading text-xl font-semibold mb-1">
                       {car.brand} {car.model}
                     </h3>
-                    <p className="text-2xl font-bold text-primary mb-4">
-                      {formatPrice(car.price)}
-                    </p>
+                    <div className="mb-4">
+                      <p className="text-2xl font-bold text-primary">
+                        {formatPrice(car.price)} <span className="text-base font-normal">brutto</span>
+                      </p>
+                      {car.vat_deductible && (
+                        <p className="text-sm text-accent font-medium">MwSt. ausweisbar</p>
+                      )}
+                    </div>
                     
                     <div className="grid grid-cols-2 gap-3 text-sm text-muted-foreground">
                       <div className="flex items-center gap-2">
@@ -243,9 +249,14 @@ const Fahrzeuge = () => {
               )}
               
               <div className="space-y-6">
-                <p className="text-3xl font-bold text-primary">
-                  {formatPrice(selectedCar.price)}
-                </p>
+                <div>
+                  <p className="text-3xl font-bold text-primary">
+                    {formatPrice(selectedCar.price)} <span className="text-lg font-normal">brutto</span>
+                  </p>
+                  {selectedCar.vat_deductible && (
+                    <p className="text-sm text-accent font-medium mt-1">MwSt. ausweisbar</p>
+                  )}
+                </div>
                 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   <div>

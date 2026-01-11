@@ -43,6 +43,7 @@ const Admin = () => {
     description: "",
     features: "",
     is_featured: false,
+    vat_deductible: false,
   });
   const [editCarData, setEditCarData] = useState({
     brand: "",
@@ -58,6 +59,7 @@ const Admin = () => {
     description: "",
     features: "",
     is_featured: false,
+    vat_deductible: false,
     existingImages: [] as string[],
   });
 
@@ -346,6 +348,7 @@ const Admin = () => {
         features: newCarData.features ? newCarData.features.split(",").map(f => f.trim()) : null,
         images: imageUrls,
         is_featured: newCarData.is_featured,
+        vat_deductible: newCarData.vat_deductible,
       });
 
       if (error) throw error;
@@ -355,7 +358,7 @@ const Admin = () => {
       setNewCarImages([]);
       setNewCarData({
         brand: "", model: "", first_registration_date: "", mileage: "", fuel_type: "", transmission: "",
-        previous_owners: "", color: "", power_hp: "", price: "", description: "", features: "", is_featured: false,
+        previous_owners: "", color: "", power_hp: "", price: "", description: "", features: "", is_featured: false, vat_deductible: false,
       });
       queryClient.invalidateQueries({ queryKey: ["admin-cars"] });
     } catch (error: any) {
@@ -411,6 +414,7 @@ const Admin = () => {
           features: editCarData.features ? editCarData.features.split(",").map(f => f.trim()) : null,
           images: imageUrls,
           is_featured: editCarData.is_featured,
+          vat_deductible: editCarData.vat_deductible,
         })
         .eq("id", editingCar.id);
 
@@ -446,6 +450,7 @@ const Admin = () => {
       description: car.description || "",
       features: car.features?.join(", ") || "",
       is_featured: car.is_featured || false,
+      vat_deductible: car.vat_deductible || false,
       existingImages: car.images || [],
     });
     setEditCarImages([]);
@@ -864,13 +869,23 @@ const Admin = () => {
                 rows={3}
               />
             </div>
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="featured"
-                checked={newCarData.is_featured}
-                onCheckedChange={(c) => setNewCarData({ ...newCarData, is_featured: !!c })}
-              />
-              <Label htmlFor="featured">Als Empfohlen markieren</Label>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="featured"
+                  checked={newCarData.is_featured}
+                  onCheckedChange={(c) => setNewCarData({ ...newCarData, is_featured: !!c })}
+                />
+                <Label htmlFor="featured">Als Empfohlen markieren</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="vat-deductible"
+                  checked={newCarData.vat_deductible}
+                  onCheckedChange={(c) => setNewCarData({ ...newCarData, vat_deductible: !!c })}
+                />
+                <Label htmlFor="vat-deductible">MwSt. ausweisbar</Label>
+              </div>
             </div>
             <div className="space-y-2">
               <Label>Bilder *</Label>
@@ -999,13 +1014,23 @@ const Admin = () => {
                 rows={3}
               />
             </div>
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="edit-featured"
-                checked={editCarData.is_featured}
-                onCheckedChange={(c) => setEditCarData({ ...editCarData, is_featured: !!c })}
-              />
-              <Label htmlFor="edit-featured">Als Empfohlen markieren</Label>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="edit-featured"
+                  checked={editCarData.is_featured}
+                  onCheckedChange={(c) => setEditCarData({ ...editCarData, is_featured: !!c })}
+                />
+                <Label htmlFor="edit-featured">Als Empfohlen markieren</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="edit-vat-deductible"
+                  checked={editCarData.vat_deductible}
+                  onCheckedChange={(c) => setEditCarData({ ...editCarData, vat_deductible: !!c })}
+                />
+                <Label htmlFor="edit-vat-deductible">MwSt. ausweisbar</Label>
+              </div>
             </div>
             <div className="space-y-2">
               <Label>Vorhandene Bilder (klicken und ziehen oder Pfeile zum Sortieren)</Label>
