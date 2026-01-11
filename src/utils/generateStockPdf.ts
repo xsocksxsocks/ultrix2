@@ -23,12 +23,13 @@ interface Car {
 
 const LOGO_URL = "https://ultrix-kfz.net/assets/ultrix-logo-CiviPjmU.png";
 
-const formatPrice = (price: number) =>
-  new Intl.NumberFormat("de-DE", {
-    style: "currency",
-    currency: "EUR",
+const formatPrice = (price: number, includeBrutto: boolean = false) => {
+  const formatted = new Intl.NumberFormat("de-DE", {
     minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   }).format(price);
+  return `${formatted} €${includeBrutto ? " brutto" : ""}`
+};
 
 const formatMileage = (mileage: number) =>
   `${mileage.toLocaleString("de-DE")} km`;
@@ -178,7 +179,7 @@ export const generateStockPdf = async (cars: Car[]) => {
     doc.setFontSize(18);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(35, 35, 35);
-    const priceText = formatPrice(car.price);
+    const priceText = formatPrice(car.price, true);
     doc.text(priceText, margin + 4, yPos + 4);
 
     // VAT info
@@ -186,7 +187,7 @@ export const generateStockPdf = async (cars: Car[]) => {
       doc.setFontSize(9);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(46, 125, 50);
-      doc.text("brutto • MwSt. ausweisbar", margin + 4 + doc.getTextWidth(priceText) + 5, yPos + 4);
+      doc.text("• MwSt. ausweisbar", margin + 4 + doc.getTextWidth(priceText) + 3, yPos + 4);
     }
 
     yPos += 14;
@@ -331,9 +332,9 @@ export const generateStockPdf = async (cars: Car[]) => {
       yPos += Math.min(featureLines.length, 2) * 3.5 + 3;
     }
 
-    // Guarantee section - three separate badges
-    const badgeHeight = 8;
-    const badgeGap = 4;
+    // Guarantee section - vertically stacked badges
+    const badgeHeight = 7;
+    const badgeGap = 2;
     const badges = [
       { text: "Technischer Zustand garantiert", icon: "✓" },
       { text: "Keine zusätzlichen Käuferkosten", icon: "✓" },
@@ -343,25 +344,24 @@ export const generateStockPdf = async (cars: Car[]) => {
       badges.push({ text: "MwSt. ausweisbar (19%)", icon: "✓" });
     }
 
-    const totalBadgeWidth = pageWidth - margin * 2;
-    const singleBadgeWidth = (totalBadgeWidth - badgeGap * (badges.length - 1)) / badges.length;
+    const badgeWidth = pageWidth - margin * 2;
 
     badges.forEach((badge, idx) => {
-      const badgeX = margin + idx * (singleBadgeWidth + badgeGap);
+      const badgeY = yPos + idx * (badgeHeight + badgeGap);
       
       // Badge background
       doc.setFillColor(240, 253, 244);
-      doc.roundedRect(badgeX, yPos, singleBadgeWidth, badgeHeight, 1.5, 1.5, "F");
+      doc.roundedRect(margin, badgeY, badgeWidth, badgeHeight, 1.5, 1.5, "F");
       
       // Left accent bar
       doc.setFillColor(34, 197, 94);
-      doc.roundedRect(badgeX, yPos, 2, badgeHeight, 1, 1, "F");
+      doc.roundedRect(margin, badgeY, 2.5, badgeHeight, 1, 1, "F");
       
       // Text
-      doc.setFontSize(7);
+      doc.setFontSize(8);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(22, 101, 52);
-      doc.text(`${badge.icon} ${badge.text}`, badgeX + 5, yPos + 5);
+      doc.text(`${badge.icon} ${badge.text}`, margin + 6, badgeY + 5);
     });
   }
 
