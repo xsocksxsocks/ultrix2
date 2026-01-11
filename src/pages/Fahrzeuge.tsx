@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { Car, Fuel, Calendar, Gauge, Settings2, ShieldCheck, CheckCircle, Award, FileCheck, Handshake, Users } from "lucide-react";
+import { Car, Fuel, Calendar, Gauge, Settings2, ShieldCheck, CheckCircle, Award, FileCheck, Handshake, Users, MousePointerClick } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -146,7 +146,7 @@ const Fahrzeuge = () => {
               {cars.map((car) => (
                 <Card 
                   key={car.id} 
-                  className={`card-hover overflow-hidden border-border ${car.is_sold ? "opacity-60 grayscale" : car.is_reserved ? "opacity-80" : "cursor-pointer"}`} 
+                  className={`card-hover overflow-hidden border-border transition-all ${car.is_sold ? "opacity-60 grayscale" : car.is_reserved ? "opacity-80" : "cursor-pointer hover:border-primary hover:shadow-lg"}`} 
                   onClick={() => !car.is_sold && !car.is_reserved && setSelectedCar(car)}
                 >
                   <div className="relative aspect-[16/10] bg-muted">
@@ -208,11 +208,19 @@ const Fahrzeuge = () => {
                         <span>{car.transmission}</span>
                       </div>
                     </div>
-                    <div className="mt-3 pt-3 border-t border-border text-sm">
-                      <span className="text-muted-foreground">MwSt. ausweisbar: </span>
-                      <span className={car.vat_deductible ? "text-accent font-medium" : "text-muted-foreground"}>
-                        {car.vat_deductible ? "Ja" : "Nein"}
-                      </span>
+                    <div className="mt-3 pt-3 border-t border-border text-sm flex items-center justify-between">
+                      <div>
+                        <span className="text-muted-foreground">MwSt. ausweisbar: </span>
+                        <span className={car.vat_deductible ? "text-accent font-medium" : "text-muted-foreground"}>
+                          {car.vat_deductible ? "Ja" : "Nein"}
+                        </span>
+                      </div>
+                      {!car.is_sold && !car.is_reserved && (
+                        <div className="flex items-center gap-1 text-primary text-xs font-medium">
+                          <MousePointerClick className="h-3 w-3" />
+                          <span>Details ansehen</span>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
