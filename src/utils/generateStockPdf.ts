@@ -230,7 +230,10 @@ const addCoverPage = (doc: jsPDF, pageWidth: number, pageHeight: number, margin:
   doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(22, 163, 74);
-  doc.text("ultrix-kfz.net/fahrzeuge", pageWidth / 2, yPos + 26, { align: "center" });
+  const linkText = "ultrix-kfz.net/fahrzeuge";
+  const linkX = pageWidth / 2 - doc.getTextWidth(linkText) / 2;
+  const linkY = yPos + 26;
+  doc.textWithLink(linkText, linkX, linkY, { url: "https://ultrix-kfz.net/fahrzeuge" });
 
   yPos += 40;
 
@@ -327,16 +330,17 @@ export const generateStockPdf = async (cars: Car[]) => {
       fillColor: [248, 250, 252],
     },
     columnStyles: {
-      0: { fontStyle: "bold", cellWidth: 38 },
-      1: { halign: "center", cellWidth: 16 },
-      2: { halign: "right", cellWidth: 24 },
-      3: { halign: "center", cellWidth: 18 },
-      4: { halign: "center", cellWidth: 20 },
-      5: { halign: "center", cellWidth: 20 },
-      6: { halign: "center", cellWidth: 12 },
-      7: { halign: "right", fontStyle: "bold", cellWidth: 30 },
-      8: { halign: "center", cellWidth: 20 },
+      0: { fontStyle: "bold", cellWidth: 32 },
+      1: { halign: "center", cellWidth: 14 },
+      2: { halign: "right", cellWidth: 20 },
+      3: { halign: "center", cellWidth: 14 },
+      4: { halign: "center", cellWidth: 16 },
+      5: { halign: "center", cellWidth: 18 },
+      6: { halign: "center", cellWidth: 10 },
+      7: { halign: "right", fontStyle: "bold", cellWidth: 26 },
+      8: { halign: "center", cellWidth: 18 },
     },
+    tableWidth: "auto",
     margin: { left: margin, right: margin },
     didDrawPage: (data) => {
       if (data.pageNumber > 1) {
