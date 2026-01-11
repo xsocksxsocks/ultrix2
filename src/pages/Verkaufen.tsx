@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { MonthYearPicker } from "@/components/ui/month-year-picker";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/layout/Layout";
@@ -329,30 +330,12 @@ const Verkaufen = () => {
                         </div>
                         <div className="space-y-2">
                           <Label>Erstzulassung *</Label>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="outline"
-                                className={cn(
-                                  "w-full justify-start text-left font-normal input-classic",
-                                  !firstRegistrationDate && "text-muted-foreground"
-                                )}
-                              >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {firstRegistrationDate ? format(firstRegistrationDate, "MM/yyyy", { locale: de }) : "Datum wählen"}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={firstRegistrationDate}
-                                onSelect={setFirstRegistrationDate}
-                                disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
-                                initialFocus
-                                className={cn("p-3 pointer-events-auto")}
-                              />
-                            </PopoverContent>
-                          </Popover>
+                          <MonthYearPicker
+                            value={firstRegistrationDate}
+                            onChange={setFirstRegistrationDate}
+                            placeholder="Monat/Jahr wählen"
+                            className="input-classic"
+                          />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="mileage">Kilometerstand *</Label>

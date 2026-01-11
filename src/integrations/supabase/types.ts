@@ -25,6 +25,7 @@ export type Database = {
           customer_email: string
           customer_name: string
           customer_phone: string
+          deleted_at: string | null
           id: string
           is_read: boolean | null
           message: string | null
@@ -40,6 +41,7 @@ export type Database = {
           customer_email: string
           customer_name: string
           customer_phone: string
+          deleted_at?: string | null
           id?: string
           is_read?: boolean | null
           message?: string | null
@@ -55,6 +57,7 @@ export type Database = {
           customer_email?: string
           customer_name?: string
           customer_phone?: string
+          deleted_at?: string | null
           id?: string
           is_read?: boolean | null
           message?: string | null
@@ -82,6 +85,7 @@ export type Database = {
           customer_email: string
           customer_name: string
           customer_phone: string
+          deleted_at: string | null
           description: string | null
           first_registration_date: string
           fuel_type: string
@@ -106,6 +110,7 @@ export type Database = {
           customer_email: string
           customer_name: string
           customer_phone: string
+          deleted_at?: string | null
           description?: string | null
           first_registration_date: string
           fuel_type: string
@@ -130,6 +135,7 @@ export type Database = {
           customer_email?: string
           customer_name?: string
           customer_phone?: string
+          deleted_at?: string | null
           description?: string | null
           first_registration_date?: string
           fuel_type?: string
@@ -150,6 +156,7 @@ export type Database = {
           brand: string
           color: string | null
           created_at: string
+          deleted_at: string | null
           description: string | null
           features: string[] | null
           first_registration_date: string
@@ -172,6 +179,7 @@ export type Database = {
           brand: string
           color?: string | null
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           features?: string[] | null
           first_registration_date: string
@@ -194,6 +202,7 @@ export type Database = {
           brand?: string
           color?: string | null
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           features?: string[] | null
           first_registration_date?: string
@@ -217,6 +226,7 @@ export type Database = {
       contact_requests: {
         Row: {
           created_at: string
+          deleted_at: string | null
           email: string
           id: string
           is_read: boolean | null
@@ -227,6 +237,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          deleted_at?: string | null
           email: string
           id?: string
           is_read?: boolean | null
@@ -237,6 +248,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          deleted_at?: string | null
           email?: string
           id?: string
           is_read?: boolean | null
