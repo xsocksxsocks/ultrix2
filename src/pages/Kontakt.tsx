@@ -124,10 +124,20 @@ const Kontakt = () => {
                     <Clock className="h-5 w-5 text-primary" />
                     <h3 className="font-semibold">Geschäftszeiten</h3>
                   </div>
-                  <p className="text-muted-foreground text-sm">
-                    Nach Vereinbarung<br />
-                    Rufen Sie uns an oder schreiben Sie uns eine E-Mail.
-                  </p>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Mo – Fr</span>
+                      <span className="font-medium">10:00 – 18:00 Uhr</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Samstag</span>
+                      <span className="font-medium">nach Vereinbarung</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Sonntag</span>
+                      <span className="font-medium text-muted-foreground">geschlossen</span>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>
