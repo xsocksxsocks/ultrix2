@@ -1,6 +1,5 @@
 import jsPDF from "jspdf";
 import { format } from "date-fns";
-import logoImg from "@/assets/ultrix-logo.png";
 
 interface Car {
   id: string;
@@ -21,6 +20,8 @@ interface Car {
   description?: string | null;
   features?: string[] | null;
 }
+
+const LOGO_URL = "https://ultrix-kfz.net/assets/ultrix-logo-CiviPjmU.png";
 
 const formatPrice = (price: number) =>
   new Intl.NumberFormat("de-DE", {
@@ -45,7 +46,7 @@ const loadImageAsBase64 = (url: string): Promise<string | null> => {
         const ctx = canvas.getContext("2d");
         if (ctx) {
           ctx.drawImage(img, 0, 0);
-          const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+          const dataUrl = canvas.toDataURL("image/png", 0.9);
           resolve(dataUrl);
         } else {
           resolve(null);
@@ -63,7 +64,7 @@ const addHeader = async (doc: jsPDF, pageWidth: number, margin: number, logoData
   // Logo
   if (logoData) {
     try {
-      doc.addImage(logoData, "PNG", margin, 8, 32, 14, undefined, "MEDIUM");
+      doc.addImage(logoData, "PNG", margin, 6, 36, 16, undefined, "MEDIUM");
     } catch {
       doc.setFontSize(18);
       doc.setFont("helvetica", "bold");
@@ -77,12 +78,7 @@ const addHeader = async (doc: jsPDF, pageWidth: number, margin: number, logoData
     doc.text("ULTRIX", margin, 18);
   }
 
-  // Decorative accent line under logo
-  doc.setDrawColor(200, 160, 60);
-  doc.setLineWidth(0.8);
-  doc.line(margin, 24, margin + 32, 24);
-
-  // Company details on the right - styled
+  // Company details on the right
   doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(80, 80, 80);
@@ -94,21 +90,15 @@ const addHeader = async (doc: jsPDF, pageWidth: number, margin: number, logoData
   doc.text("kontakt@ultrix-kfz.net", rightAlign, 23, { align: "right" });
 
   // Elegant separator line
-  doc.setDrawColor(230, 230, 230);
-  doc.setLineWidth(0.3);
-  doc.line(margin, 28, pageWidth - margin, 28);
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.2);
+  doc.line(margin, 26, pageWidth - margin, 26);
 };
 
 const addFooter = (doc: jsPDF, pageWidth: number, pageHeight: number, pageNumber: number, totalPages: number) => {
-  // Top line
-  doc.setDrawColor(230, 230, 230);
-  doc.setLineWidth(0.3);
-  doc.line(14, pageHeight - 18, pageWidth - 14, pageHeight - 18);
-
-  // Accent
-  doc.setDrawColor(200, 160, 60);
-  doc.setLineWidth(0.8);
-  doc.line(pageWidth / 2 - 15, pageHeight - 18, pageWidth / 2 + 15, pageHeight - 18);
+  doc.setDrawColor(220, 220, 220);
+  doc.setLineWidth(0.2);
+  doc.line(14, pageHeight - 16, pageWidth - 14, pageHeight - 16);
 
   doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
@@ -116,13 +106,13 @@ const addFooter = (doc: jsPDF, pageWidth: number, pageHeight: number, pageNumber
   doc.text(
     `Seite ${pageNumber} von ${totalPages}`,
     pageWidth / 2,
-    pageHeight - 12,
+    pageHeight - 11,
     { align: "center" }
   );
   doc.text(
     "ULTRIX UG • Weihgartenstr. 19 • 68519 Viernheim • +49 6204 6129035",
     pageWidth / 2,
-    pageHeight - 8,
+    pageHeight - 7,
     { align: "center" }
   );
 };
@@ -133,8 +123,8 @@ export const generateStockPdf = async (cars: Car[]) => {
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 14;
 
-  // Load logo
-  const logoData = await loadImageAsBase64(logoImg);
+  // Load logo from URL
+  const logoData = await loadImageAsBase64(LOGO_URL);
 
   // Filter only available cars (not sold)
   const availableCars = cars.filter((car) => !car.is_sold);
@@ -159,10 +149,10 @@ export const generateStockPdf = async (cars: Car[]) => {
 
     await addHeader(doc, pageWidth, margin, logoData);
 
-    let yPos = 34;
+    let yPos = 32;
 
     // Car title with subtle background
-    doc.setFillColor(252, 252, 252);
+    doc.setFillColor(250, 250, 250);
     doc.roundedRect(margin, yPos - 4, pageWidth - margin * 2, 12, 1, 1, "F");
     
     doc.setFontSize(15);
@@ -181,26 +171,22 @@ export const generateStockPdf = async (cars: Car[]) => {
 
     yPos += 14;
 
-    // Price section with accent
-    doc.setFillColor(250, 248, 245);
+    // Price section
+    doc.setFillColor(248, 248, 248);
     doc.roundedRect(margin, yPos - 3, pageWidth - margin * 2, 11, 1, 1, "F");
-    
-    // Gold accent bar
-    doc.setFillColor(200, 160, 60);
-    doc.rect(margin, yPos - 3, 3, 11, "F");
 
     doc.setFontSize(18);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(35, 35, 35);
     const priceText = formatPrice(car.price);
-    doc.text(priceText, margin + 8, yPos + 4);
+    doc.text(priceText, margin + 4, yPos + 4);
 
     // VAT info
     if (car.vat_deductible) {
       doc.setFontSize(9);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(46, 125, 50);
-      doc.text("brutto • MwSt. ausweisbar", margin + 8 + doc.getTextWidth(priceText) + 5, yPos + 4);
+      doc.text("brutto • MwSt. ausweisbar", margin + 4 + doc.getTextWidth(priceText) + 5, yPos + 4);
     }
 
     yPos += 14;
@@ -216,13 +202,8 @@ export const generateStockPdf = async (cars: Car[]) => {
           const imgWidth = pageWidth - margin * 2;
           const imgHeight = 65;
           
-          // Subtle shadow effect
-          doc.setFillColor(240, 240, 240);
-          doc.roundedRect(margin + 1, yPos + 1, imgWidth, imgHeight, 2, 2, "F");
-          
           doc.addImage(imgData, "JPEG", margin, yPos, imgWidth, imgHeight, undefined, "MEDIUM");
           
-          // Border
           doc.setDrawColor(220, 220, 220);
           doc.setLineWidth(0.3);
           doc.roundedRect(margin, yPos, imgWidth, imgHeight, 2, 2, "S");
@@ -272,8 +253,8 @@ export const generateStockPdf = async (cars: Car[]) => {
       yPos += thumbHeight + 5;
     }
 
-    // Specifications - refined grid
-    doc.setFillColor(250, 250, 252);
+    // Specifications grid
+    doc.setFillColor(252, 252, 254);
     doc.roundedRect(margin, yPos, pageWidth - margin * 2, 32, 2, 2, "F");
     doc.setDrawColor(235, 235, 240);
     doc.setLineWidth(0.2);
@@ -350,22 +331,38 @@ export const generateStockPdf = async (cars: Car[]) => {
       yPos += Math.min(featureLines.length, 2) * 3.5 + 3;
     }
 
-    // Guarantee box - compact and elegant
-    const boxWidth = pageWidth - margin * 2;
-    doc.setFillColor(245, 252, 245);
-    doc.setDrawColor(180, 210, 180);
-    doc.setLineWidth(0.3);
-    doc.roundedRect(margin, yPos, boxWidth, 10, 2, 2, "FD");
-
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(46, 125, 50);
+    // Guarantee section - three separate badges
+    const badgeHeight = 8;
+    const badgeGap = 4;
+    const badges = [
+      { text: "Technischer Zustand garantiert", icon: "✓" },
+      { text: "Keine zusätzlichen Käuferkosten", icon: "✓" },
+    ];
     
-    let guaranteeText = "✓ Technischer Zustand garantiert   •   ✓ Keine Käuferkosten";
     if (car.vat_deductible) {
-      guaranteeText += "   •   ✓ MwSt. ausweisbar (19%)";
+      badges.push({ text: "MwSt. ausweisbar (19%)", icon: "✓" });
     }
-    doc.text(guaranteeText, pageWidth / 2, yPos + 6, { align: "center" });
+
+    const totalBadgeWidth = pageWidth - margin * 2;
+    const singleBadgeWidth = (totalBadgeWidth - badgeGap * (badges.length - 1)) / badges.length;
+
+    badges.forEach((badge, idx) => {
+      const badgeX = margin + idx * (singleBadgeWidth + badgeGap);
+      
+      // Badge background
+      doc.setFillColor(240, 253, 244);
+      doc.roundedRect(badgeX, yPos, singleBadgeWidth, badgeHeight, 1.5, 1.5, "F");
+      
+      // Left accent bar
+      doc.setFillColor(34, 197, 94);
+      doc.roundedRect(badgeX, yPos, 2, badgeHeight, 1, 1, "F");
+      
+      // Text
+      doc.setFontSize(7);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(22, 101, 52);
+      doc.text(`${badge.icon} ${badge.text}`, badgeX + 5, yPos + 5);
+    });
   }
 
   // Add footers to all pages
