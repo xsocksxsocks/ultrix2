@@ -131,11 +131,11 @@ const Kontakt = () => {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Samstag</span>
-                      <span className="font-medium">nach Vereinbarung</span>
+                      <span className="font-medium">Nach Vereinbarung</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Sonntag</span>
-                      <span className="font-medium text-muted-foreground">geschlossen</span>
+                      <span className="font-medium text-muted-foreground">Geschlossen</span>
                     </div>
                   </div>
                 </CardContent>
