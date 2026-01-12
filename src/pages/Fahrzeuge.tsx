@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { Car, Fuel, Calendar, Gauge, Settings2, ShieldCheck, CheckCircle, Award, FileCheck, Handshake, Users, MousePointerClick } from "lucide-react";
+import { Car, Fuel, Calendar, Gauge, Settings2, ShieldCheck, CheckCircle, Award, FileCheck, Handshake, Users, MousePointerClick, Bike, Truck } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,7 @@ interface CarForSale {
 
 const Fahrzeuge = () => {
   const [selectedCar, setSelectedCar] = useState<CarForSale | null>(null);
+  const [vehicleTypeFilter, setVehicleTypeFilter] = useState<string>("all");
   const navigate = useNavigate();
 
   const { data: cars, isLoading } = useQuery({
@@ -63,6 +64,11 @@ const Fahrzeuge = () => {
   const formatMileage = (mileage: number) => {
     return new Intl.NumberFormat("de-DE").format(mileage) + " km";
   };
+
+  const filteredCars = cars?.filter(car => {
+    if (vehicleTypeFilter === "all") return true;
+    return car.vehicle_type === vehicleTypeFilter || (!car.vehicle_type && vehicleTypeFilter === "Pkw");
+  });
 
   return (
     <Layout>
@@ -130,6 +136,41 @@ const Fahrzeuge = () => {
 
       <section className="py-16 md:py-24">
         <div className="section-container">
+          {/* Vehicle Type Filter */}
+          <div className="flex flex-wrap gap-3 mb-8">
+            <Button 
+              variant={vehicleTypeFilter === "all" ? "default" : "outline"} 
+              onClick={() => setVehicleTypeFilter("all")}
+              className="flex items-center gap-2"
+            >
+              Alle
+            </Button>
+            <Button 
+              variant={vehicleTypeFilter === "Pkw" ? "default" : "outline"} 
+              onClick={() => setVehicleTypeFilter("Pkw")}
+              className="flex items-center gap-2"
+            >
+              <Car className="h-4 w-4" />
+              Pkw
+            </Button>
+            <Button 
+              variant={vehicleTypeFilter === "Motorrad" ? "default" : "outline"} 
+              onClick={() => setVehicleTypeFilter("Motorrad")}
+              className="flex items-center gap-2"
+            >
+              <Bike className="h-4 w-4" />
+              Motorrad
+            </Button>
+            <Button 
+              variant={vehicleTypeFilter === "Baumaschine" ? "default" : "outline"} 
+              onClick={() => setVehicleTypeFilter("Baumaschine")}
+              className="flex items-center gap-2"
+            >
+              <Truck className="h-4 w-4" />
+              Baumaschine
+            </Button>
+          </div>
+
           {isLoading ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {[1, 2, 3].map((i) => (
@@ -142,11 +183,11 @@ const Fahrzeuge = () => {
                 </Card>
               ))}
             </div>
-          ) : cars && cars.length > 0 ? (
+          ) : filteredCars && filteredCars.length > 0 ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {cars.map((car) => (
+              {filteredCars.map((car) => (
                 <Card 
-                  key={car.id} 
+                  key={car.id}
                   className={`card-hover overflow-hidden border-border transition-all ${car.is_sold ? "opacity-60 grayscale" : car.is_reserved ? "opacity-80" : "cursor-pointer hover:border-primary hover:shadow-lg"}`} 
                   onClick={() => !car.is_sold && !car.is_reserved && setSelectedCar(car)}
                 >
@@ -235,10 +276,19 @@ const Fahrzeuge = () => {
           ) : (
             <div className="text-center py-16">
               <Car className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
-              <h2 className="font-heading text-2xl font-semibold mb-2">Keine Fahrzeuge verfügbar</h2>
+              <h2 className="font-heading text-2xl font-semibold mb-2">
+                {vehicleTypeFilter !== "all" ? `Keine ${vehicleTypeFilter === "Pkw" ? "Pkw" : vehicleTypeFilter === "Motorrad" ? "Motorräder" : "Baumaschinen"} verfügbar` : "Keine Fahrzeuge verfügbar"}
+              </h2>
               <p className="text-muted-foreground">
-                Aktuell sind keine Fahrzeuge im Angebot. Schauen Sie bald wieder vorbei!
+                {vehicleTypeFilter !== "all" 
+                  ? "Versuchen Sie einen anderen Filter oder schauen Sie bald wieder vorbei!"
+                  : "Aktuell sind keine Fahrzeuge im Angebot. Schauen Sie bald wieder vorbei!"}
               </p>
+              {vehicleTypeFilter !== "all" && (
+                <Button variant="outline" className="mt-4" onClick={() => setVehicleTypeFilter("all")}>
+                  Alle Fahrzeuge anzeigen
+                </Button>
+              )}
             </div>
           )}
         </div>

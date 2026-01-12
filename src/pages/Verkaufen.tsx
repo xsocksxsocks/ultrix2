@@ -162,15 +162,11 @@ const Verkaufen = () => {
   };
 
   const vehicleTypes = ["Pkw", "Motorrad", "Baumaschine"];
-  const brandsByType: Record<string, string[]> = {
-    "Pkw": ["Audi", "BMW", "Citroën", "Dacia", "Ford", "Honda", "Hyundai", "Kia", "Mazda", "Mercedes-Benz", "Opel", "Porsche", "Renault", "Skoda", "Smart", "Toyota", "Volkswagen", "Volvo", "Andere"],
-    "Motorrad": ["BMW", "Ducati", "Honda", "Kawasaki", "KTM", "Suzuki", "Yamaha", "Andere"],
-    "Baumaschine": ["Caterpillar", "JCB", "Komatsu", "Liebherr", "Takeuchi", "Volvo", "Andere"],
-  };
   const carBrands = [
-    "Audi", "BMW", "Citroën", "Dacia", "Ducati", "Ford", "Honda", "Hyundai", 
-    "JCB", "Kia", "Mazda", "Mercedes-Benz", "Opel", "Porsche", "Renault", 
-    "Skoda", "Smart", "Takeuchi", "Toyota", "Volkswagen", "Volvo", "Yamaha", "Andere"
+    "Audi", "BMW", "Caterpillar", "Citroën", "Dacia", "Ducati", "Ford", "Honda", "Hyundai", 
+    "JCB", "Kawasaki", "Kia", "Komatsu", "KTM", "Liebherr", "Mazda", "Mercedes-Benz", "Opel", 
+    "Porsche", "Renault", "Skoda", "Smart", "Suzuki", "Takeuchi", "Toyota", "Volkswagen", 
+    "Volvo", "Yamaha", "Andere"
   ];
 
   const fuelTypes = ["Benzin", "Diesel", "Hybrid", "Elektro", "Gas"];
@@ -313,7 +309,7 @@ const Verkaufen = () => {
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label>Fahrzeugtyp *</Label>
-                          <Select value={formData.vehicle_type} onValueChange={(v) => setFormData({ ...formData, vehicle_type: v, brand: "" })} required>
+                          <Select value={formData.vehicle_type} onValueChange={(v) => setFormData({ ...formData, vehicle_type: v })} required>
                             <SelectTrigger className="input-classic">
                               <SelectValue placeholder="Typ wählen" />
                             </SelectTrigger>
@@ -331,7 +327,7 @@ const Verkaufen = () => {
                               <SelectValue placeholder="Marke wählen" />
                             </SelectTrigger>
                             <SelectContent>
-                              {(brandsByType[formData.vehicle_type] || carBrands).map((brand) => (
+                              {carBrands.map((brand) => (
                                 <SelectItem key={brand} value={brand}>{brand}</SelectItem>
                               ))}
                             </SelectContent>
