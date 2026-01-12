@@ -41,7 +41,7 @@ const Verkaufen = () => {
   const [appointmentDate, setAppointmentDate] = useState<Date | undefined>();
   const [appointmentTime, setAppointmentTime] = useState<string>("");
   const [formData, setFormData] = useState({
-    vehicle_type: "Pkw",
+    vehicle_type: "Fahrzeug",
     customer_name: "",
     customer_email: "",
     customer_phone: "",
@@ -161,7 +161,7 @@ const Verkaufen = () => {
     }
   };
 
-  const vehicleTypes = ["Pkw", "Motorrad", "Baumaschine"];
+  const vehicleTypes = ["Fahrzeug", "Motorrad", "Baumaschinen"];
   const carBrands = [
     "Audi", "BMW", "Caterpillar", "Citroën", "Dacia", "Ducati", "Ford", "Honda", "Hyundai", 
     "JCB", "Kawasaki", "Kia", "Komatsu", "KTM", "Liebherr", "Mazda", "Mercedes-Benz", "Opel", 

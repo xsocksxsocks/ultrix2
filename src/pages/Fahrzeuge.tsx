@@ -67,7 +67,7 @@ const Fahrzeuge = () => {
 
   const filteredCars = cars?.filter(car => {
     if (vehicleTypeFilter === "all") return true;
-    return car.vehicle_type === vehicleTypeFilter || (!car.vehicle_type && vehicleTypeFilter === "Pkw");
+    return car.vehicle_type === vehicleTypeFilter || (!car.vehicle_type && vehicleTypeFilter === "Fahrzeug");
   });
 
   return (
@@ -146,12 +146,12 @@ const Fahrzeuge = () => {
               Alle
             </Button>
             <Button 
-              variant={vehicleTypeFilter === "Pkw" ? "default" : "outline"} 
-              onClick={() => setVehicleTypeFilter("Pkw")}
+              variant={vehicleTypeFilter === "Fahrzeug" ? "default" : "outline"} 
+              onClick={() => setVehicleTypeFilter("Fahrzeug")}
               className="flex items-center gap-2"
             >
               <Car className="h-4 w-4" />
-              Pkw
+              Fahrzeug
             </Button>
             <Button 
               variant={vehicleTypeFilter === "Motorrad" ? "default" : "outline"} 
@@ -162,12 +162,12 @@ const Fahrzeuge = () => {
               Motorrad
             </Button>
             <Button 
-              variant={vehicleTypeFilter === "Baumaschine" ? "default" : "outline"} 
-              onClick={() => setVehicleTypeFilter("Baumaschine")}
+              variant={vehicleTypeFilter === "Baumaschinen" ? "default" : "outline"} 
+              onClick={() => setVehicleTypeFilter("Baumaschinen")}
               className="flex items-center gap-2"
             >
               <Truck className="h-4 w-4" />
-              Baumaschine
+              Baumaschinen
             </Button>
           </div>
 
@@ -277,7 +277,7 @@ const Fahrzeuge = () => {
             <div className="text-center py-16">
               <Car className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
               <h2 className="font-heading text-2xl font-semibold mb-2">
-                {vehicleTypeFilter !== "all" ? `Keine ${vehicleTypeFilter === "Pkw" ? "Pkw" : vehicleTypeFilter === "Motorrad" ? "Motorräder" : "Baumaschinen"} verfügbar` : "Keine Fahrzeuge verfügbar"}
+                {vehicleTypeFilter !== "all" ? `Keine ${vehicleTypeFilter === "Fahrzeug" ? "Fahrzeuge" : vehicleTypeFilter === "Motorrad" ? "Motorräder" : "Baumaschinen"} verfügbar` : "Keine Fahrzeuge verfügbar"}
               </h2>
               <p className="text-muted-foreground">
                 {vehicleTypeFilter !== "all" 
