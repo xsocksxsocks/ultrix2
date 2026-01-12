@@ -35,6 +35,7 @@ const Admin = () => {
   const [newCarRegistrationDate, setNewCarRegistrationDate] = useState<Date | undefined>();
   const [editCarRegistrationDate, setEditCarRegistrationDate] = useState<Date | undefined>();
   const [newCarData, setNewCarData] = useState({
+    vehicle_type: "Pkw",
     brand: "",
     model: "",
     mileage: "",
@@ -50,6 +51,7 @@ const Admin = () => {
     vat_deductible: false,
   });
   const [editCarData, setEditCarData] = useState({
+    vehicle_type: "Pkw",
     brand: "",
     model: "",
     mileage: "",
@@ -500,6 +502,7 @@ const Admin = () => {
       }
 
       const { error } = await supabase.from("cars_for_sale").insert({
+        vehicle_type: newCarData.vehicle_type,
         brand: newCarData.brand,
         model: newCarData.model,
         first_registration_date: format(newCarRegistrationDate, "yyyy-MM-dd"),
@@ -524,7 +527,7 @@ const Admin = () => {
       setNewCarImages([]);
       setNewCarRegistrationDate(undefined);
       setNewCarData({
-        brand: "", model: "", mileage: "", fuel_type: "", transmission: "",
+        vehicle_type: "Pkw", brand: "", model: "", mileage: "", fuel_type: "", transmission: "",
         previous_owners: "", color: "", power_hp: "", price: "", description: "", features: "", is_featured: false, vat_deductible: false,
       });
       queryClient.invalidateQueries({ queryKey: ["admin-cars"] });
@@ -576,6 +579,7 @@ const Admin = () => {
       const { error } = await supabase
         .from("cars_for_sale")
         .update({
+          vehicle_type: editCarData.vehicle_type,
           brand: editCarData.brand,
           model: editCarData.model,
           first_registration_date: format(editCarRegistrationDate, "yyyy-MM-dd"),
@@ -615,6 +619,7 @@ const Admin = () => {
     setEditingCar(car);
     setEditCarRegistrationDate(new Date(car.first_registration_date));
     setEditCarData({
+      vehicle_type: car.vehicle_type || "Pkw",
       brand: car.brand,
       model: car.model,
       mileage: car.mileage.toString(),
@@ -642,6 +647,12 @@ const Admin = () => {
     style: "currency", currency: "EUR", minimumFractionDigits: 0,
   }).format(price);
 
+  const vehicleTypes = ["Pkw", "Motorrad", "Baumaschine"];
+  const brandsByType: Record<string, string[]> = {
+    "Pkw": ["Audi", "BMW", "Citroën", "Dacia", "Ford", "Honda", "Hyundai", "Kia", "Mazda", "Mercedes-Benz", "Opel", "Porsche", "Renault", "Skoda", "Smart", "Toyota", "Volkswagen", "Volvo", "Andere"],
+    "Motorrad": ["BMW", "Ducati", "Honda", "Kawasaki", "KTM", "Suzuki", "Yamaha", "Andere"],
+    "Baumaschine": ["Caterpillar", "JCB", "Komatsu", "Liebherr", "Takeuchi", "Volvo", "Andere"],
+  };
   const carBrands = ["Audi", "BMW", "Citroën", "Dacia", "Ducati", "Ford", "Honda", "Hyundai", "JCB", "Kia", "Mazda", "Mercedes-Benz", "Opel", "Porsche", "Renault", "Skoda", "Smart", "Takeuchi", "Toyota", "Volkswagen", "Volvo", "Yamaha", "Andere"];
   const fuelTypes = ["Benzin", "Diesel", "Hybrid", "Elektro", "Gas"];
   const transmissions = ["Schaltgetriebe", "Automatik"];
@@ -1270,11 +1281,22 @@ const Admin = () => {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
+                <Label>Fahrzeugtyp *</Label>
+                <Select value={newCarData.vehicle_type} onValueChange={(v) => setNewCarData({ ...newCarData, vehicle_type: v, brand: "" })}>
+                  <SelectTrigger><SelectValue placeholder="Typ wählen" /></SelectTrigger>
+                  <SelectContent>
+                    {vehicleTypes.map((type) => (
+                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
                 <Label>Marke *</Label>
                 <Select value={newCarData.brand} onValueChange={(v) => setNewCarData({ ...newCarData, brand: v })}>
                   <SelectTrigger><SelectValue placeholder="Marke wählen" /></SelectTrigger>
                   <SelectContent>
-                    {carBrands.map((brand) => (
+                    {(brandsByType[newCarData.vehicle_type] || carBrands).map((brand) => (
                       <SelectItem key={brand} value={brand}>{brand}</SelectItem>
                     ))}
                   </SelectContent>
@@ -1419,11 +1441,22 @@ const Admin = () => {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
+                <Label>Fahrzeugtyp *</Label>
+                <Select value={editCarData.vehicle_type} onValueChange={(v) => setEditCarData({ ...editCarData, vehicle_type: v, brand: "" })}>
+                  <SelectTrigger><SelectValue placeholder="Typ wählen" /></SelectTrigger>
+                  <SelectContent>
+                    {vehicleTypes.map((type) => (
+                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
                 <Label>Marke *</Label>
                 <Select value={editCarData.brand} onValueChange={(v) => setEditCarData({ ...editCarData, brand: v })}>
                   <SelectTrigger><SelectValue placeholder="Marke wählen" /></SelectTrigger>
                   <SelectContent>
-                    {carBrands.map((brand) => (
+                    {(brandsByType[editCarData.vehicle_type] || carBrands).map((brand) => (
                       <SelectItem key={brand} value={brand}>{brand}</SelectItem>
                     ))}
                   </SelectContent>

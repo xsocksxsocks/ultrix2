@@ -41,6 +41,7 @@ const Verkaufen = () => {
   const [appointmentDate, setAppointmentDate] = useState<Date | undefined>();
   const [appointmentTime, setAppointmentTime] = useState<string>("");
   const [formData, setFormData] = useState({
+    vehicle_type: "Pkw",
     customer_name: "",
     customer_email: "",
     customer_phone: "",
@@ -118,6 +119,7 @@ const Verkaufen = () => {
 
       // Insert sell request with appointment data
       const { error } = await supabase.from("car_sell_requests").insert({
+        vehicle_type: formData.vehicle_type,
         customer_name: validatedData.customer_name,
         customer_email: validatedData.customer_email,
         customer_phone: validatedData.customer_phone,
@@ -159,6 +161,12 @@ const Verkaufen = () => {
     }
   };
 
+  const vehicleTypes = ["Pkw", "Motorrad", "Baumaschine"];
+  const brandsByType: Record<string, string[]> = {
+    "Pkw": ["Audi", "BMW", "Citroën", "Dacia", "Ford", "Honda", "Hyundai", "Kia", "Mazda", "Mercedes-Benz", "Opel", "Porsche", "Renault", "Skoda", "Smart", "Toyota", "Volkswagen", "Volvo", "Andere"],
+    "Motorrad": ["BMW", "Ducati", "Honda", "Kawasaki", "KTM", "Suzuki", "Yamaha", "Andere"],
+    "Baumaschine": ["Caterpillar", "JCB", "Komatsu", "Liebherr", "Takeuchi", "Volvo", "Andere"],
+  };
   const carBrands = [
     "Audi", "BMW", "Citroën", "Dacia", "Ducati", "Ford", "Honda", "Hyundai", 
     "JCB", "Kia", "Mazda", "Mercedes-Benz", "Opel", "Porsche", "Renault", 
@@ -304,13 +312,26 @@ const Verkaufen = () => {
                       <h3 className="font-heading text-xl font-semibold mb-4">Fahrzeugdaten</h3>
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
+                          <Label>Fahrzeugtyp *</Label>
+                          <Select value={formData.vehicle_type} onValueChange={(v) => setFormData({ ...formData, vehicle_type: v, brand: "" })} required>
+                            <SelectTrigger className="input-classic">
+                              <SelectValue placeholder="Typ wählen" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {vehicleTypes.map((type) => (
+                                <SelectItem key={type} value={type}>{type}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
                           <Label>Marke *</Label>
-                          <Select onValueChange={(v) => handleSelectChange("brand", v)} required>
+                          <Select value={formData.brand} onValueChange={(v) => handleSelectChange("brand", v)} required>
                             <SelectTrigger className="input-classic">
                               <SelectValue placeholder="Marke wählen" />
                             </SelectTrigger>
                             <SelectContent>
-                              {carBrands.map((brand) => (
+                              {(brandsByType[formData.vehicle_type] || carBrands).map((brand) => (
                                 <SelectItem key={brand} value={brand}>{brand}</SelectItem>
                               ))}
                             </SelectContent>

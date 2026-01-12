@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/layout/Layout";
 interface CarForSale {
   id: string;
+  vehicle_type: string | null;
   brand: string;
   model: string;
   first_registration_date: string;
@@ -178,6 +179,11 @@ const Fahrzeuge = () => {
                     )}
                   </div>
                   <CardContent className="p-6">
+                    <div className="flex items-center gap-2 mb-1">
+                      {car.vehicle_type && car.vehicle_type !== "Pkw" && (
+                        <Badge variant="outline" className="text-xs">{car.vehicle_type}</Badge>
+                      )}
+                    </div>
                     <h3 className="font-heading text-xl font-semibold mb-1">
                       {car.brand} {car.model}
                     </h3>
@@ -273,6 +279,12 @@ const Fahrzeuge = () => {
                 </div>
                 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {selectedCar.vehicle_type && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Fahrzeugtyp</p>
+                      <p className="font-medium">{selectedCar.vehicle_type}</p>
+                    </div>
+                  )}
                   <div>
                     <p className="text-sm text-muted-foreground">Erstzulassung</p>
                     <p className="font-medium">{format(new Date(selectedCar.first_registration_date), "MMMM yyyy", { locale: de })}</p>
