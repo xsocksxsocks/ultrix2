@@ -98,6 +98,7 @@ export type Database = {
           previous_owners: number | null
           status: string | null
           transmission: string
+          vehicle_type: string | null
         }
         Insert: {
           appointment_confirmed?: boolean | null
@@ -123,6 +124,7 @@ export type Database = {
           previous_owners?: number | null
           status?: string | null
           transmission: string
+          vehicle_type?: string | null
         }
         Update: {
           appointment_confirmed?: boolean | null
@@ -148,6 +150,7 @@ export type Database = {
           previous_owners?: number | null
           status?: string | null
           transmission?: string
+          vehicle_type?: string | null
         }
         Relationships: []
       }
@@ -174,6 +177,7 @@ export type Database = {
           transmission: string
           updated_at: string
           vat_deductible: boolean | null
+          vehicle_type: string | null
         }
         Insert: {
           brand: string
@@ -197,6 +201,7 @@ export type Database = {
           transmission: string
           updated_at?: string
           vat_deductible?: boolean | null
+          vehicle_type?: string | null
         }
         Update: {
           brand?: string
@@ -220,6 +225,7 @@ export type Database = {
           transmission?: string
           updated_at?: string
           vat_deductible?: boolean | null
+          vehicle_type?: string | null
         }
         Relationships: []
       }
