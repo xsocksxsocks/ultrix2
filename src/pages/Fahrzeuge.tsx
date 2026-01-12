@@ -67,8 +67,20 @@ const Fahrzeuge = () => {
 
   const filteredCars = cars?.filter(car => {
     if (vehicleTypeFilter === "all") return true;
-    return car.vehicle_type === vehicleTypeFilter || (!car.vehicle_type && vehicleTypeFilter === "Fahrzeug");
+    if (vehicleTypeFilter === "Fahrzeug") {
+      return car.vehicle_type === "Fahrzeug" || car.vehicle_type === "Pkw" || !car.vehicle_type;
+    }
+    if (vehicleTypeFilter === "Baumaschinen") {
+      return car.vehicle_type === "Baumaschinen" || car.vehicle_type === "Baumaschine";
+    }
+    return car.vehicle_type === vehicleTypeFilter;
   });
+
+  const getVehicleTypeDisplay = (type: string | null) => {
+    if (!type || type === "Pkw") return "Fahrzeug";
+    if (type === "Baumaschine") return "Baumaschinen";
+    return type;
+  };
 
   return (
     <Layout>
@@ -221,8 +233,8 @@ const Fahrzeuge = () => {
                   </div>
                   <CardContent className="p-6">
                     <div className="flex items-center gap-2 mb-1">
-                      {car.vehicle_type && car.vehicle_type !== "Pkw" && (
-                        <Badge variant="outline" className="text-xs">{car.vehicle_type}</Badge>
+                      {car.vehicle_type && car.vehicle_type !== "Pkw" && car.vehicle_type !== "Fahrzeug" && (
+                        <Badge variant="outline" className="text-xs">{getVehicleTypeDisplay(car.vehicle_type)}</Badge>
                       )}
                     </div>
                     <h3 className="font-heading text-xl font-semibold mb-1">
@@ -332,7 +344,7 @@ const Fahrzeuge = () => {
                   {selectedCar.vehicle_type && (
                     <div>
                       <p className="text-sm text-muted-foreground">Fahrzeugtyp</p>
-                      <p className="font-medium">{selectedCar.vehicle_type}</p>
+                      <p className="font-medium">{getVehicleTypeDisplay(selectedCar.vehicle_type)}</p>
                     </div>
                   )}
                   <div>
