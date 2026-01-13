@@ -281,7 +281,7 @@ const Fahrzeuge = () => {
                       </div>
                       {car.listing_number && (
                         <div className="flex items-center gap-2">
-                          <span className="font-mono">Inserat-Nr. {car.listing_number}</span>
+                          <span>Inserat-Nr. {car.listing_number}</span>
                         </div>
                       )}
                     </div>
@@ -364,7 +364,7 @@ const Fahrzeuge = () => {
                   {selectedCar.listing_number && (
                     <div>
                       <p className="text-sm text-muted-foreground">Inserat-Nr.</p>
-                      <p className="font-medium font-mono">{selectedCar.listing_number}</p>
+                      <p className="font-medium">{selectedCar.listing_number}</p>
                     </div>
                   )}
                   {selectedCar.vehicle_type && (
