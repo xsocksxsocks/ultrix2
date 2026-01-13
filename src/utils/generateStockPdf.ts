@@ -184,12 +184,12 @@ const addCoverPage = (doc: jsPDF, pageWidth: number, pageHeight: number, margin:
     const boxX = margin + col * (boxWidth + 10);
     const boxY = yPos + row * (boxHeight + boxGap);
 
-    // Box background - light blue
-    doc.setFillColor(53, 197, 255);
+    // Box background - blue
+    doc.setFillColor(7, 122, 203);
     doc.roundedRect(boxX, boxY, boxWidth, boxHeight, 2, 2, "F");
 
-    // Left accent - blue
-    doc.setFillColor(7, 122, 203);
+    // Left accent - light blue
+    doc.setFillColor(53, 197, 255);
     doc.roundedRect(boxX, boxY, 3, boxHeight, 1, 1, "F");
 
     // Title
