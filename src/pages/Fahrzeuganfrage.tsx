@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { de } from "date-fns/locale";
+import { de, enUS } from "date-fns/locale";
 import { Car, Calendar, Gauge, Fuel, Settings2, ArrowLeft, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/layout/Layout";
 import { Link } from "react-router-dom";
+import { useLanguage, useLocalizedRoute } from "@/i18n/LanguageContext";
 
 interface CarForSale {
   id: string;
@@ -27,7 +28,9 @@ interface CarForSale {
   previous_owners: number | null;
   price: number;
   description: string | null;
+  description_en: string | null;
   features: string[] | null;
+  features_en: string[] | null;
   images: string[];
   is_sold: boolean;
   is_featured: boolean;
@@ -38,6 +41,9 @@ const Fahrzeuganfrage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { language, t } = useLanguage();
+  const getRoute = useLocalizedRoute();
+  const dateLocale = language === "de" ? de : enUS;
   const carId = searchParams.get("car");
 
   const [formData, setFormData] = useState({
@@ -66,9 +72,9 @@ const Fahrzeuganfrage = () => {
 
   useEffect(() => {
     if (!carId) {
-      navigate("/fahrzeuge");
+      navigate(getRoute("vehicles"));
     }
-  }, [carId, navigate]);
+  }, [carId, navigate, getRoute]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("de-DE", {
@@ -80,6 +86,33 @@ const Fahrzeuganfrage = () => {
 
   const formatMileage = (mileage: number) => {
     return new Intl.NumberFormat("de-DE").format(mileage) + " km";
+  };
+
+  const getDescription = (car: CarForSale) => {
+    if (language === "en" && car.description_en) return car.description_en;
+    return car.description;
+  };
+
+  const getTransmissionDisplay = (transmission: string) => {
+    if (language === "en") {
+      if (transmission === "Automatik") return "Automatic";
+      if (transmission === "Schaltgetriebe") return "Manual";
+    }
+    return transmission;
+  };
+
+  const getFuelTypeDisplay = (fuelType: string) => {
+    if (language === "en") {
+      const fuelMap: Record<string, string> = {
+        "Benzin": "Petrol",
+        "Diesel": "Diesel",
+        "Elektro": "Electric",
+        "Hybrid": "Hybrid",
+        "Gas": "Gas",
+      };
+      return fuelMap[fuelType] || fuelType;
+    }
+    return fuelType;
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -96,7 +129,7 @@ const Fahrzeuganfrage = () => {
 
     if (!formData.name || !formData.email || !formData.phone) {
       toast({
-        title: "Bitte füllen Sie alle Pflichtfelder aus",
+        title: t.inquiry.error.requiredFields,
         variant: "destructive",
       });
       return;
@@ -120,14 +153,14 @@ const Fahrzeuganfrage = () => {
       if (error) throw error;
 
       toast({
-        title: "Anfrage gesendet!",
-        description: "Wir werden uns schnellstmöglich bei Ihnen melden.",
+        title: t.inquiry.success.title,
+        description: t.inquiry.success.message,
       });
 
-      navigate("/fahrzeuge");
+      navigate(getRoute("vehicles"));
     } catch (error: any) {
       toast({
-        title: "Fehler beim Senden",
+        title: t.inquiry.error.sendFailed,
         description: error.message,
         variant: "destructive",
       });
@@ -157,10 +190,10 @@ const Fahrzeuganfrage = () => {
         <section className="py-16">
           <div className="section-container text-center">
             <Car className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
-            <h1 className="font-heading text-2xl font-semibold mb-2">Fahrzeug nicht gefunden</h1>
-            <p className="text-muted-foreground mb-4">Das angeforderte Fahrzeug existiert nicht mehr.</p>
+            <h1 className="font-heading text-2xl font-semibold mb-2">{t.inquiry.notFound.title}</h1>
+            <p className="text-muted-foreground mb-4">{t.inquiry.notFound.text}</p>
             <Button asChild>
-              <Link to="/fahrzeuge">Zurück zu den Fahrzeugen</Link>
+              <Link to={getRoute("vehicles")}>{t.inquiry.notFound.button}</Link>
             </Button>
           </div>
         </section>
@@ -173,13 +206,13 @@ const Fahrzeuganfrage = () => {
       {/* Page Header */}
       <section className="page-header gradient-navy">
         <div className="section-container">
-          <Link to="/fahrzeuge" className="inline-flex items-center gap-2 text-primary-foreground/80 hover:text-primary-foreground mb-4 transition-colors">
+          <Link to={getRoute("vehicles")} className="inline-flex items-center gap-2 text-primary-foreground/80 hover:text-primary-foreground mb-4 transition-colors">
             <ArrowLeft className="h-4 w-4" />
-            Zurück zu den Fahrzeugen
+            {t.inquiry.backToVehicles}
           </Link>
-          <h1 className="font-heading text-4xl md:text-5xl font-bold mb-4">Fahrzeuganfrage</h1>
+          <h1 className="font-heading text-4xl md:text-5xl font-bold mb-4">{t.inquiry.title}</h1>
           <p className="text-primary-foreground/90 text-lg">
-            Senden Sie uns Ihre Anfrage für das ausgewählte Fahrzeug.
+            {t.inquiry.subtitle}
           </p>
         </div>
       </section>
@@ -208,12 +241,12 @@ const Fahrzeuganfrage = () => {
 
                   <div>
                     <p className="text-3xl font-bold text-primary">
-                      {formatPrice(car.price)} <span className="text-lg font-normal">brutto</span>
+                      {formatPrice(car.price)} <span className="text-lg font-normal">{t.common.gross}</span>
                     </p>
                     <p className="text-sm mt-1">
-                      <span className="text-muted-foreground">MwSt. ausweisbar: </span>
+                      <span className="text-muted-foreground">{t.vehicles.card.vatDeductible}: </span>
                       <span className={car.vat_deductible ? "text-accent font-medium" : "text-muted-foreground"}>
-                        {car.vat_deductible ? "Ja" : "Nein"}
+                        {car.vat_deductible ? t.common.yes : t.common.no}
                       </span>
                     </p>
                   </div>
@@ -221,7 +254,7 @@ const Fahrzeuganfrage = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Calendar className="h-4 w-4" />
-                      <span>EZ {format(new Date(car.first_registration_date), "MM/yyyy")}</span>
+                      <span>{language === "de" ? "EZ" : "Reg."} {format(new Date(car.first_registration_date), "MM/yyyy")}</span>
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Gauge className="h-4 w-4" />
@@ -229,24 +262,24 @@ const Fahrzeuganfrage = () => {
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Fuel className="h-4 w-4" />
-                      <span>{car.fuel_type}</span>
+                      <span>{getFuelTypeDisplay(car.fuel_type)}</span>
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Settings2 className="h-4 w-4" />
-                      <span>{car.transmission}</span>
+                      <span>{getTransmissionDisplay(car.transmission)}</span>
                     </div>
                     {car.previous_owners !== null && (
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Users className="h-4 w-4" />
-                        <span>{car.previous_owners} Vorbesitzer</span>
+                        <span>{car.previous_owners} {language === "de" ? "Vorbesitzer" : "Previous owners"}</span>
                       </div>
                     )}
                   </div>
 
-                  {car.description && (
+                  {getDescription(car) && (
                     <div>
-                      <h4 className="font-semibold mb-2">Beschreibung</h4>
-                      <p className="text-muted-foreground text-sm">{car.description}</p>
+                      <h4 className="font-semibold mb-2">{t.vehicles.details.description}</h4>
+                      <p className="text-muted-foreground text-sm">{getDescription(car)}</p>
                     </div>
                   )}
                 </CardContent>
@@ -257,62 +290,62 @@ const Fahrzeuganfrage = () => {
             <div>
               <Card>
                 <CardHeader>
-                  <CardTitle>Ihre Kontaktdaten</CardTitle>
+                  <CardTitle>{t.inquiry.form.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-2">
-                      <Label htmlFor="name">Name *</Label>
+                      <Label htmlFor="name">{t.inquiry.form.name} *</Label>
                       <Input
                         id="name"
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
-                        placeholder="Ihr vollständiger Name"
+                        placeholder={t.inquiry.form.namePlaceholder}
                         required
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="email">E-Mail *</Label>
+                      <Label htmlFor="email">{t.inquiry.form.email} *</Label>
                       <Input
                         id="email"
                         name="email"
                         type="email"
                         value={formData.email}
                         onChange={handleChange}
-                        placeholder="ihre@email.de"
+                        placeholder={t.inquiry.form.emailPlaceholder}
                         required
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="phone">Telefon *</Label>
+                      <Label htmlFor="phone">{t.inquiry.form.phone} *</Label>
                       <Input
                         id="phone"
                         name="phone"
                         type="tel"
                         value={formData.phone}
                         onChange={handleChange}
-                        placeholder="+49 123 456789"
+                        placeholder={t.inquiry.form.phonePlaceholder}
                         required
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="message">Nachricht (optional)</Label>
+                      <Label htmlFor="message">{t.inquiry.form.message}</Label>
                       <Textarea
                         id="message"
                         name="message"
                         value={formData.message}
                         onChange={handleChange}
-                        placeholder="Haben Sie Fragen zum Fahrzeug?"
+                        placeholder={t.inquiry.form.messagePlaceholder}
                         rows={4}
                       />
                     </div>
 
                     <Button type="submit" className="w-full" disabled={isSubmitting}>
-                      {isSubmitting ? "Wird gesendet..." : "Anfrage senden"}
+                      {isSubmitting ? t.inquiry.form.submitting : t.inquiry.form.submit}
                     </Button>
                   </form>
                 </CardContent>

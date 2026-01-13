@@ -173,6 +173,39 @@ export const de = {
     },
   },
 
+  // Vehicle Inquiry Page
+  inquiry: {
+    title: "Fahrzeuganfrage",
+    subtitle: "Senden Sie uns Ihre Anfrage für das ausgewählte Fahrzeug.",
+    backToVehicles: "Zurück zu den Fahrzeugen",
+    notFound: {
+      title: "Fahrzeug nicht gefunden",
+      text: "Das angeforderte Fahrzeug existiert nicht mehr.",
+      button: "Zurück zu den Fahrzeugen",
+    },
+    form: {
+      title: "Ihre Kontaktdaten",
+      name: "Name",
+      namePlaceholder: "Ihr vollständiger Name",
+      email: "E-Mail",
+      emailPlaceholder: "ihre@email.de",
+      phone: "Telefon",
+      phonePlaceholder: "+49 123 456789",
+      message: "Nachricht (optional)",
+      messagePlaceholder: "Haben Sie Fragen zum Fahrzeug?",
+      submit: "Anfrage senden",
+      submitting: "Wird gesendet...",
+    },
+    success: {
+      title: "Anfrage gesendet!",
+      message: "Wir werden uns schnellstmöglich bei Ihnen melden.",
+    },
+    error: {
+      requiredFields: "Bitte füllen Sie alle Pflichtfelder aus",
+      sendFailed: "Fehler beim Senden",
+    },
+  },
+
   // Sell Page
   sell: {
     title: "Auto verkaufen",
