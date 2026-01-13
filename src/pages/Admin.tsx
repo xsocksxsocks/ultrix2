@@ -1007,12 +1007,12 @@ const Admin = () => {
                           )}
                         </div>
                         <div className="p-4">
-                          <div className="flex items-center gap-2 mb-1">
+                          <div className="flex items-center justify-between mb-1">
+                            <h4 className="font-semibold">{car.brand} {car.model}</h4>
                             {car.listing_number && (
-                              <Badge variant="secondary" className="text-xs font-mono">#{car.listing_number}</Badge>
+                              <span className="text-xs text-muted-foreground font-mono">#{car.listing_number}</span>
                             )}
                           </div>
-                          <h4 className="font-semibold">{car.brand} {car.model}</h4>
                           <p className="text-lg font-bold text-primary">{formatPrice(car.price)}</p>
                           <p className="text-sm text-muted-foreground">
                             EZ {format(new Date(car.first_registration_date), "MM/yyyy")} • {car.mileage.toLocaleString("de-DE")} km

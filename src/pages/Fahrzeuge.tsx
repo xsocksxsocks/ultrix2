@@ -234,12 +234,14 @@ const Fahrzeuge = () => {
                     )}
                   </div>
                   <CardContent className="p-6">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        {car.vehicle_type && car.vehicle_type !== "Pkw" && car.vehicle_type !== "Fahrzeug" && (
+                          <Badge variant="outline" className="text-xs">{getVehicleTypeDisplay(car.vehicle_type)}</Badge>
+                        )}
+                      </div>
                       {car.listing_number && (
-                        <Badge variant="secondary" className="text-xs font-mono">#{car.listing_number}</Badge>
-                      )}
-                      {car.vehicle_type && car.vehicle_type !== "Pkw" && car.vehicle_type !== "Fahrzeug" && (
-                        <Badge variant="outline" className="text-xs">{getVehicleTypeDisplay(car.vehicle_type)}</Badge>
+                        <span className="text-xs text-muted-foreground font-mono">#{car.listing_number}</span>
                       )}
                     </div>
                     <h3 className="font-heading text-xl font-semibold mb-1">
@@ -317,14 +319,14 @@ const Fahrzeuge = () => {
           {selectedCar && (
             <>
               <DialogHeader>
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center justify-between">
+                  <DialogTitle className="font-heading text-2xl">
+                    {selectedCar.brand} {selectedCar.model}
+                  </DialogTitle>
                   {selectedCar.listing_number && (
-                    <Badge variant="secondary" className="text-sm font-mono">Inserats-Nr. #{selectedCar.listing_number}</Badge>
+                    <span className="text-sm text-muted-foreground font-mono">Inserats-Nr. #{selectedCar.listing_number}</span>
                   )}
                 </div>
-                <DialogTitle className="font-heading text-2xl">
-                  {selectedCar.brand} {selectedCar.model}
-                </DialogTitle>
               </DialogHeader>
               
               {selectedCar.images && selectedCar.images.length > 0 && (
