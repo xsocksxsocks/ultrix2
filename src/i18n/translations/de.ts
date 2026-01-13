@@ -54,9 +54,9 @@ export const de = {
   // Home Page
   home: {
     hero: {
-      badge: "Sofortige Barauszahlung",
+      badge: "Sofortige Auszahlung",
       title: "Wir kaufen Ihr Auto – fair, schnell & unkompliziert",
-      description: "ULTRIX ist Ihre zuverlässige Ankaufstation in Viernheim. Verkaufen Sie Ihr Fahrzeug ohne Stress und erhalten Sie sofort Bargeld. Alle Marken, alle Modelle – wir machen Ihnen ein faires Angebot.",
+      description: "ULTRIX ist Ihre zuverlässige Ankaufstation in Viernheim. Verkaufen Sie Ihr Fahrzeug ohne Stress und erhalten Sie sofort Ihr Geld. Alle Marken, alle Modelle – wir machen Ihnen ein faires Angebot.",
       sellButton: "Jetzt Auto verkaufen",
       adviceButton: "Kostenlos beraten lassen",
     },
@@ -93,7 +93,7 @@ export const de = {
         description: "Wählen Sie einen passenden Termin für die Fahrzeugbegutachtung vor Ort.",
       },
       step3: {
-        title: "Bargeld erhalten",
+        title: "Geld erhalten",
         description: "Nach kurzer Prüfung erhalten Sie sofort Ihr Geld – sicher und unkompliziert.",
       },
       button: "Jetzt Fahrzeug verkaufen",
@@ -259,7 +259,7 @@ export const de = {
       step1: { title: "Formular absenden", description: "Wir erhalten Ihre Daten und Bilder" },
       step2: { title: "Terminbestätigung", description: "Wir bestätigen Ihren Wunschtermin" },
       step3: { title: "Fahrzeugprüfung", description: "Kurze Begutachtung vor Ort" },
-      step4: { title: "Sofortige Auszahlung", description: "Bargeld oder Überweisung" },
+      step4: { title: "Sofortige Auszahlung", description: "Überweisung oder vor Ort" },
       questions: "Fragen? Rufen Sie uns an:",
     },
     success: {

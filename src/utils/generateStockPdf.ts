@@ -176,7 +176,7 @@ const addCoverPage = (doc: jsPDF, pageWidth: number, pageHeight: number, margin:
   const features = [
     { title: "Technisch geprüft", desc: "Umfassende Inspektion" },
     { title: "Zustandsgarantie", desc: "Vertraglich gesichert" },
-    { title: "Keine Zusatzkosten", desc: "Faire Preise" },
+    { title: "Keine Zusatzkosten", desc: "Lieferung deutschlandweit inkl." },
     { title: "Geprüfte Historie", desc: "Transparente Herkunft" },
   ];
 
@@ -283,7 +283,7 @@ export const generateStockPdf = async (cars: Car[]) => {
   doc.addPage();
   addHeader(doc, pageWidth, margin, logoInfo);
 
-  // Build table data - removed MwSt column
+  // Build table data
   const tableData = availableCars.map((car) => [
     `${car.brand} ${car.model}`,
     format(new Date(car.first_registration_date), "MM/yyyy"),
@@ -293,7 +293,7 @@ export const generateStockPdf = async (cars: Car[]) => {
     car.transmission,
     car.previous_owners !== null && car.previous_owners !== undefined ? car.previous_owners.toString() : "—",
     formatPrice(car.price),
-    car.is_reserved ? "Reserviert" : "Verfügbar",
+    car.vat_deductible ? "Ja" : "Nein",
   ]);
 
   // Create table with neutral colors
@@ -308,7 +308,7 @@ export const generateStockPdf = async (cars: Car[]) => {
       "Getriebe",
       "VB",
       "Preis",
-      "Status",
+      "MwSt.",
     ]],
     body: tableData,
     theme: "grid",
@@ -348,13 +348,13 @@ export const generateStockPdf = async (cars: Car[]) => {
       addHeader(doc, pageWidth, margin, logoInfo);
     },
     didParseCell: (data) => {
-      // Style status column
+      // Style MwSt column
       if (data.section === "body" && data.column.index === 8) {
-        if (data.cell.raw === "Reserviert") {
-          data.cell.styles.textColor = [245, 158, 11];
+        if (data.cell.raw === "Ja") {
+          data.cell.styles.textColor = [22, 163, 74];
           data.cell.styles.fontStyle = "bold";
         } else {
-          data.cell.styles.textColor = [22, 163, 74];
+          data.cell.styles.textColor = [100, 100, 100];
         }
       }
     },
