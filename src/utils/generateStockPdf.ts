@@ -367,10 +367,10 @@ export const generateStockPdf = async (cars: Car[]) => {
 
   // Helper to add category section
   const addCategorySection = (title: string, carList: Car[], startY: number) => {
-    // Category title
-    doc.setFontSize(14);
+    // Category title - same dark color as vehicle names
+    doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(7, 122, 203);
+    doc.setTextColor(50, 50, 50);
     doc.text(title, margin, startY);
 
     // Table
