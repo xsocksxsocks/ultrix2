@@ -87,6 +87,7 @@ export type Database = {
           customer_phone: string
           deleted_at: string | null
           description: string | null
+          description_en: string | null
           first_registration_date: string
           fuel_type: string
           id: string
@@ -113,6 +114,7 @@ export type Database = {
           customer_phone: string
           deleted_at?: string | null
           description?: string | null
+          description_en?: string | null
           first_registration_date: string
           fuel_type: string
           id?: string
@@ -139,6 +141,7 @@ export type Database = {
           customer_phone?: string
           deleted_at?: string | null
           description?: string | null
+          description_en?: string | null
           first_registration_date?: string
           fuel_type?: string
           id?: string
@@ -161,7 +164,9 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           description: string | null
+          description_en: string | null
           features: string[] | null
+          features_en: string[] | null
           first_registration_date: string
           fuel_type: string
           id: string
@@ -186,7 +191,9 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           description?: string | null
+          description_en?: string | null
           features?: string[] | null
+          features_en?: string[] | null
           first_registration_date: string
           fuel_type: string
           id?: string
@@ -211,7 +218,9 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           description?: string | null
+          description_en?: string | null
           features?: string[] | null
+          features_en?: string[] | null
           first_registration_date?: string
           fuel_type?: string
           id?: string

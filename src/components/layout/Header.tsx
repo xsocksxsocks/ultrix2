@@ -2,16 +2,21 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Phone, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage, useLocalizedRoute } from "@/i18n/LanguageContext";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import ultrixLogo from "@/assets/ultrix-logo.png";
+
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const { t } = useLanguage();
+  const getRoute = useLocalizedRoute();
 
   const navLinks = [
-    { href: "/", label: "Startseite" },
-    { href: "/fahrzeuge", label: "Fahrzeuge kaufen" },
-    { href: "/verkaufen", label: "Fahrzeug verkaufen" },
-    { href: "/kontakt", label: "Kontakt" },
+    { href: getRoute("home"), label: t.nav.home },
+    { href: getRoute("vehicles"), label: t.nav.vehicles },
+    { href: getRoute("sell"), label: t.nav.sell },
+    { href: getRoute("contact"), label: t.nav.contact },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -22,15 +27,16 @@ const Header = () => {
       <div className="bg-primary text-primary-foreground py-2">
         <div className="section-container flex justify-between items-center text-sm">
           <div className="flex items-center gap-4">
-            <a href="tel:+4962046129035" className="flex items-center gap-1 hover:opacity-80 transition-opacity">
+            <a href={`tel:${t.common.phone.replace(/\s/g, "")}`} className="flex items-center gap-1 hover:opacity-80 transition-opacity">
               <Phone className="h-3 w-3" />
-              <span className="hidden sm:inline">+49 6204 6129035</span>
+              <span className="hidden sm:inline">{t.common.phone}</span>
             </a>
-            <a href="mailto:kontakt@ultrix-kfz.net" className="flex items-center gap-1 hover:opacity-80 transition-opacity">
+            <a href={`mailto:${t.common.email}`} className="flex items-center gap-1 hover:opacity-80 transition-opacity">
               <Mail className="h-3 w-3" />
-              <span className="hidden sm:inline">kontakt@ultrix-kfz.net</span>
+              <span className="hidden sm:inline">{t.common.email}</span>
             </a>
           </div>
+          <LanguageSwitcher />
         </div>
       </div>
 
@@ -38,7 +44,7 @@ const Header = () => {
       <nav className="section-container py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link to="/">
+          <Link to={getRoute("home")}>
             <img src={ultrixLogo} alt="ULTRIX Logo" className="h-10" />
           </Link>
 

@@ -8,23 +8,25 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/layout/Layout";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { z } from "zod";
-
-const contactSchema = z.object({
-  name: z.string().min(2, "Name muss mindestens 2 Zeichen haben").max(100),
-  email: z.string().email("Bitte geben Sie eine gültige E-Mail-Adresse ein").max(255),
-  phone: z.string().max(30).optional(),
-  message: z.string().min(10, "Nachricht muss mindestens 10 Zeichen haben").max(2000),
-});
 
 const Kontakt = () => {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     message: "",
+  });
+
+  const contactSchema = z.object({
+    name: z.string().min(2, t.validation.nameMin).max(100),
+    email: z.string().email(t.validation.emailInvalid).max(255),
+    phone: z.string().max(30).optional(),
+    message: z.string().min(10, t.validation.messageMin).max(2000),
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -48,22 +50,22 @@ const Kontakt = () => {
       if (error) throw error;
 
       toast({
-        title: "Nachricht gesendet",
-        description: "Vielen Dank für Ihre Anfrage. Wir melden uns zeitnah bei Ihnen.",
+        title: t.contact.success.title,
+        description: t.contact.success.message,
       });
 
       setFormData({ name: "", email: "", phone: "", message: "" });
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast({
-          title: "Eingabefehler",
+          title: t.validation.inputError,
           description: error.errors[0].message,
           variant: "destructive",
         });
       } else {
         toast({
-          title: "Fehler",
-          description: "Ihre Nachricht konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
+          title: t.validation.inputError,
+          description: t.validation.genericError,
           variant: "destructive",
         });
       }
@@ -73,9 +75,9 @@ const Kontakt = () => {
   };
 
   const contactInfo = [
-    { icon: Phone, label: "Telefon", value: "+49 6204 6129035", href: "tel:+4962046129035" },
-    { icon: Mail, label: "E-Mail", value: "kontakt@ultrix-kfz.net", href: "mailto:kontakt@ultrix-kfz.net" },
-    { icon: MapPin, label: "Adresse", value: "Weihgartenstr. 19, 68519 Viernheim", href: null },
+    { icon: Phone, label: t.contact.phone, value: t.common.phone, href: `tel:${t.common.phone.replace(/\s/g, "")}` },
+    { icon: Mail, label: t.contact.email, value: t.common.email, href: `mailto:${t.common.email}` },
+    { icon: MapPin, label: t.contact.address, value: `${t.common.address}, ${t.common.city}`, href: null },
   ];
 
   return (
@@ -83,10 +85,9 @@ const Kontakt = () => {
       {/* Page Header */}
       <section className="page-header gradient-navy">
         <div className="section-container">
-          <h1 className="font-heading text-4xl md:text-5xl font-bold mb-4">Kontakt</h1>
+          <h1 className="font-heading text-4xl md:text-5xl font-bold mb-4">{t.contact.title}</h1>
           <p className="text-primary-foreground/90 text-lg max-w-2xl">
-            Haben Sie Fragen zu unseren Fahrzeugen oder möchten Sie Ihr Auto verkaufen? 
-            Kontaktieren Sie uns – wir sind gerne für Sie da.
+            {t.contact.subtitle}
           </p>
         </div>
       </section>
@@ -96,7 +97,7 @@ const Kontakt = () => {
           <div className="grid lg:grid-cols-3 gap-12">
             {/* Contact Info */}
             <div className="lg:col-span-1">
-              <h2 className="font-heading text-2xl font-bold mb-6">So erreichen Sie uns</h2>
+              <h2 className="font-heading text-2xl font-bold mb-6">{t.contact.reach}</h2>
               
               <div className="space-y-6">
                 {contactInfo.map((item, index) => (
@@ -122,20 +123,20 @@ const Kontakt = () => {
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3 mb-3">
                     <Clock className="h-5 w-5 text-primary" />
-                    <h3 className="font-semibold">Geschäftszeiten</h3>
+                    <h3 className="font-semibold">{t.contact.hours.title}</h3>
                   </div>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Mo – Fr</span>
-                      <span className="font-medium">10:00 – 18:00 Uhr</span>
+                      <span className="text-muted-foreground">{t.contact.hours.weekdays}</span>
+                      <span className="font-medium">{t.contact.hours.weekdaysTime}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Samstag</span>
-                      <span className="font-medium">Nach Vereinbarung</span>
+                      <span className="text-muted-foreground">{t.contact.hours.saturday}</span>
+                      <span className="font-medium">{t.contact.hours.saturdayTime}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Sonntag</span>
-                      <span className="font-medium text-muted-foreground">Geschlossen</span>
+                      <span className="text-muted-foreground">{t.contact.hours.sunday}</span>
+                      <span className="font-medium text-muted-foreground">{t.contact.hours.sundayTime}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -146,12 +147,12 @@ const Kontakt = () => {
             <div className="lg:col-span-2">
               <Card className="border-border">
                 <CardContent className="p-8">
-                  <h2 className="font-heading text-2xl font-bold mb-6">Nachricht senden</h2>
+                  <h2 className="font-heading text-2xl font-bold mb-6">{t.contact.form.title}</h2>
                   
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid sm:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <Label htmlFor="name">Name *</Label>
+                        <Label htmlFor="name">{t.contact.form.name} *</Label>
                         <Input
                           id="name"
                           name="name"
@@ -159,11 +160,11 @@ const Kontakt = () => {
                           onChange={handleChange}
                           required
                           className="input-classic"
-                          placeholder="Ihr Name"
+                          placeholder={t.contact.form.namePlaceholder}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="email">E-Mail *</Label>
+                        <Label htmlFor="email">{t.contact.form.email} *</Label>
                         <Input
                           id="email"
                           name="email"
@@ -172,13 +173,13 @@ const Kontakt = () => {
                           onChange={handleChange}
                           required
                           className="input-classic"
-                          placeholder="ihre@email.de"
+                          placeholder={t.contact.form.emailPlaceholder}
                         />
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="phone">Telefon (optional)</Label>
+                      <Label htmlFor="phone">{t.contact.form.phone}</Label>
                       <Input
                         id="phone"
                         name="phone"
@@ -186,12 +187,12 @@ const Kontakt = () => {
                         value={formData.phone}
                         onChange={handleChange}
                         className="input-classic"
-                        placeholder="+49 ..."
+                        placeholder={t.contact.form.phonePlaceholder}
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="message">Nachricht *</Label>
+                      <Label htmlFor="message">{t.contact.form.message} *</Label>
                       <Textarea
                         id="message"
                         name="message"
@@ -200,13 +201,13 @@ const Kontakt = () => {
                         required
                         rows={5}
                         className="input-classic resize-none"
-                        placeholder="Wie können wir Ihnen helfen?"
+                        placeholder={t.contact.form.messagePlaceholder}
                       />
                     </div>
 
                     <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
                       <Send className="h-4 w-4 mr-2" />
-                      {isSubmitting ? "Wird gesendet..." : "Nachricht senden"}
+                      {isSubmitting ? t.common.sending : t.contact.form.submit}
                     </Button>
                   </form>
                 </CardContent>
@@ -219,7 +220,7 @@ const Kontakt = () => {
       {/* Map Section */}
       <section className="pb-16 md:pb-24">
         <div className="section-container">
-          <h2 className="font-heading text-2xl font-bold mb-6 text-center">Standort</h2>
+          <h2 className="font-heading text-2xl font-bold mb-6 text-center">{t.contact.map.title}</h2>
           <div className="rounded-lg overflow-hidden border border-border shadow-md">
             <iframe
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2597.1234567890!2d8.5777!3d49.5405!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4797c9c1234567890%3A0x1234567890abcdef!2sWeihgartenstra%C3%9Fe%2019%2C%2068519%20Viernheim%2C%20Germany!5e0!3m2!1sde!2sde!4v1703000000000!5m2!1sde!2sde"
@@ -241,7 +242,7 @@ const Kontakt = () => {
               className="text-primary hover:underline inline-flex items-center gap-2"
             >
               <MapPin className="h-4 w-4" />
-              In Google Maps öffnen
+              {t.contact.map.openInMaps}
             </a>
           </div>
         </div>
