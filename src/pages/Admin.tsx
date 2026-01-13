@@ -1007,15 +1007,11 @@ const Admin = () => {
                           )}
                         </div>
                         <div className="p-4">
-                          <div className="flex items-center justify-between mb-1">
-                            <h4 className="font-semibold">{car.brand} {car.model}</h4>
-                            {car.listing_number && (
-                              <span className="text-xs text-muted-foreground font-mono">#{car.listing_number}</span>
-                            )}
-                          </div>
+                          <h4 className="font-semibold">{car.brand} {car.model}</h4>
                           <p className="text-lg font-bold text-primary">{formatPrice(car.price)}</p>
                           <p className="text-sm text-muted-foreground">
                             EZ {format(new Date(car.first_registration_date), "MM/yyyy")} • {car.mileage.toLocaleString("de-DE")} km
+                            {car.listing_number && <> • <span className="font-mono">Inserat-Nr. {car.listing_number}</span></>}
                           </p>
                           <div className="flex flex-wrap gap-2 mt-4">
                             <Button size="sm" variant="outline" onClick={() => openEditDialog(car)}>

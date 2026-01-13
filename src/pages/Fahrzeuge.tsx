@@ -234,14 +234,9 @@ const Fahrzeuge = () => {
                     )}
                   </div>
                   <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-2">
-                        {car.vehicle_type && car.vehicle_type !== "Pkw" && car.vehicle_type !== "Fahrzeug" && (
-                          <Badge variant="outline" className="text-xs">{getVehicleTypeDisplay(car.vehicle_type)}</Badge>
-                        )}
-                      </div>
-                      {car.listing_number && (
-                        <span className="text-xs text-muted-foreground font-mono">#{car.listing_number}</span>
+                    <div className="flex items-center gap-2 mb-1">
+                      {car.vehicle_type && car.vehicle_type !== "Pkw" && car.vehicle_type !== "Fahrzeug" && (
+                        <Badge variant="outline" className="text-xs">{getVehicleTypeDisplay(car.vehicle_type)}</Badge>
                       )}
                     </div>
                     <h3 className="font-heading text-xl font-semibold mb-1">
@@ -273,6 +268,11 @@ const Fahrzeuge = () => {
                         <Settings2 className="h-4 w-4" />
                         <span>{car.transmission}</span>
                       </div>
+                      {car.listing_number && (
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono">Inserat-Nr. {car.listing_number}</span>
+                        </div>
+                      )}
                     </div>
                     <div className="mt-3 pt-3 border-t border-border text-sm flex items-center justify-between">
                       <div>
@@ -319,14 +319,9 @@ const Fahrzeuge = () => {
           {selectedCar && (
             <>
               <DialogHeader>
-                <div className="flex items-center justify-between">
-                  <DialogTitle className="font-heading text-2xl">
-                    {selectedCar.brand} {selectedCar.model}
-                  </DialogTitle>
-                  {selectedCar.listing_number && (
-                    <span className="text-sm text-muted-foreground font-mono">Inserats-Nr. #{selectedCar.listing_number}</span>
-                  )}
-                </div>
+                <DialogTitle className="font-heading text-2xl">
+                  {selectedCar.brand} {selectedCar.model}
+                </DialogTitle>
               </DialogHeader>
               
               {selectedCar.images && selectedCar.images.length > 0 && (
@@ -353,6 +348,12 @@ const Fahrzeuge = () => {
                 </div>
                 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {selectedCar.listing_number && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Inserat-Nr.</p>
+                      <p className="font-medium font-mono">{selectedCar.listing_number}</p>
+                    </div>
+                  )}
                   {selectedCar.vehicle_type && (
                     <div>
                       <p className="text-sm text-muted-foreground">Fahrzeugtyp</p>
