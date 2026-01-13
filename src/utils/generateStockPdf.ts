@@ -362,7 +362,7 @@ export const generateStockPdf = async (cars: Car[]) => {
     "Getriebe",
     "VB",
     "Preis",
-    "MwSt.",
+    "MwSt. absetzbar",
   ]];
 
   // Helper to add category section
