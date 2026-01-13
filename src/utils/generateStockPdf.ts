@@ -342,7 +342,7 @@ export const generateStockPdf = async (cars: Car[]) => {
       8: { halign: "center" },
     },
     tableWidth: pageWidth - margin * 2,
-    margin: { left: margin, right: margin, top: 32 },
+    margin: { left: margin, right: margin, top: 32, bottom: 25 },
     didDrawPage: (data) => {
       // Add header on all pages (including first table page)
       addHeader(doc, pageWidth, margin, logoInfo);
