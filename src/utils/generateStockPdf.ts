@@ -360,7 +360,7 @@ export const generateStockPdf = async (cars: Car[]) => {
     "Leistung",
     "Kraftstoff",
     "Getriebe",
-    "VB",
+    "Vorbes.",
     "Preis",
     "MwSt. ausweisbar",
   ]];
