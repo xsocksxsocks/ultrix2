@@ -1007,6 +1007,11 @@ const Admin = () => {
                           )}
                         </div>
                         <div className="p-4">
+                          <div className="flex items-center gap-2 mb-1">
+                            {car.listing_number && (
+                              <Badge variant="secondary" className="text-xs font-mono">#{car.listing_number}</Badge>
+                            )}
+                          </div>
                           <h4 className="font-semibold">{car.brand} {car.model}</h4>
                           <p className="text-lg font-bold text-primary">{formatPrice(car.price)}</p>
                           <p className="text-sm text-muted-foreground">
