@@ -149,8 +149,8 @@ const addCoverPage = (doc: jsPDF, pageWidth: number, pageHeight: number, margin:
   doc.setTextColor(100, 100, 100);
   doc.text(`Stand: ${format(new Date(), "dd.MM.yyyy")} • ${carCount} Fahrzeuge verfügbar`, pageWidth / 2, 80, { align: "center" });
 
-  // Decorative line - darker green
-  doc.setDrawColor(22, 163, 74);
+  // Decorative line - light blue
+  doc.setDrawColor(53, 197, 255);
   doc.setLineWidth(1);
   doc.line(pageWidth / 2 - 40, 88, pageWidth / 2 + 40, 88);
 
@@ -184,24 +184,24 @@ const addCoverPage = (doc: jsPDF, pageWidth: number, pageHeight: number, margin:
     const boxX = margin + col * (boxWidth + 10);
     const boxY = yPos + row * (boxHeight + boxGap);
 
-    // Box background
-    doc.setFillColor(236, 253, 245);
+    // Box background - light blue
+    doc.setFillColor(53, 197, 255);
     doc.roundedRect(boxX, boxY, boxWidth, boxHeight, 2, 2, "F");
 
-    // Left accent - darker green
-    doc.setFillColor(22, 163, 74);
+    // Left accent - blue
+    doc.setFillColor(7, 122, 203);
     doc.roundedRect(boxX, boxY, 3, boxHeight, 1, 1, "F");
 
     // Title
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(20, 83, 45);
+    doc.setTextColor(255, 255, 255);
     doc.text(feature.title, boxX + 8, boxY + 9);
 
     // Description
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
-    doc.setTextColor(80, 80, 80);
+    doc.setTextColor(255, 255, 255);
     doc.text(feature.desc, boxX + 8, boxY + 15);
   });
 
@@ -224,11 +224,11 @@ const addCoverPage = (doc: jsPDF, pageWidth: number, pageHeight: number, margin:
 
   doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(22, 163, 74);
-  const linkText = "ultrix-kfz.net/fahrzeuge";
+  doc.setTextColor(7, 122, 203);
+  const linkText = "www.ultrix-kfz.net/fahrzeuge";
   const linkX = pageWidth / 2 - doc.getTextWidth(linkText) / 2;
   const linkY = yPos + 26;
-  doc.textWithLink(linkText, linkX, linkY, { url: "https://ultrix-kfz.net/fahrzeuge" });
+  doc.textWithLink(linkText, linkX, linkY, { url: "https://www.ultrix-kfz.net/fahrzeuge" });
 
   yPos += 40;
 
