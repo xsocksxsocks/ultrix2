@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Upload, X, Send, CheckCircle, CalendarIcon, Euro, Clock, Shield, Phone } from "lucide-react";
 import { format } from "date-fns";
-import { de } from "date-fns/locale";
+import { de, enUS } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,25 +16,13 @@ import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/layout/Layout";
 import { z } from "zod";
 import { cn } from "@/lib/utils";
-
-const sellCarSchema = z.object({
-  customer_name: z.string().min(2, "Name muss mindestens 2 Zeichen haben").max(100),
-  customer_email: z.string().email("Bitte geben Sie eine gültige E-Mail-Adresse ein").max(255),
-  customer_phone: z.string().min(5, "Bitte geben Sie eine gültige Telefonnummer ein").max(30),
-  brand: z.string().min(1, "Bitte wählen Sie eine Marke").max(50),
-  model: z.string().min(1, "Bitte geben Sie das Modell ein").max(100),
-  first_registration_date: z.date({ required_error: "Bitte wählen Sie ein Erstzulassungsdatum" }),
-  mileage: z.number().min(0, "Ungültiger Kilometerstand"),
-  fuel_type: z.string().min(1, "Bitte wählen Sie einen Kraftstoff"),
-  transmission: z.string().min(1, "Bitte wählen Sie ein Getriebe"),
-  previous_owners: z.number().min(0, "Ungültige Anzahl").optional(),
-  color: z.string().max(50).optional(),
-  description: z.string().max(2000).optional(),
-  asking_price: z.number().min(0).optional(),
-});
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const Verkaufen = () => {
   const { toast } = useToast();
+  const { language, t } = useLanguage();
+  const dateLocale = language === "de" ? de : enUS;
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [images, setImages] = useState<File[]>([]);
@@ -56,6 +44,22 @@ const Verkaufen = () => {
     asking_price: "",
   });
   const [firstRegistrationDate, setFirstRegistrationDate] = useState<Date | undefined>();
+
+  const sellCarSchema = z.object({
+    customer_name: z.string().min(2, t.validation.nameMin).max(100),
+    customer_email: z.string().email(t.validation.emailInvalid).max(255),
+    customer_phone: z.string().min(5, t.validation.phoneInvalid).max(30),
+    brand: z.string().min(1, t.validation.brandRequired).max(50),
+    model: z.string().min(1, t.validation.modelRequired).max(100),
+    first_registration_date: z.date({ required_error: t.validation.registrationRequired }),
+    mileage: z.number().min(0, t.validation.mileageInvalid),
+    fuel_type: z.string().min(1, t.validation.fuelRequired),
+    transmission: z.string().min(1, t.validation.transmissionRequired),
+    previous_owners: z.number().min(0).optional(),
+    color: z.string().max(50).optional(),
+    description: z.string().max(2000).optional(),
+    asking_price: z.number().min(0).optional(),
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -82,8 +86,8 @@ const Verkaufen = () => {
     
     if (images.length === 0) {
       toast({
-        title: "Bilder erforderlich",
-        description: "Bitte laden Sie mindestens ein Bild Ihres Fahrzeugs hoch.",
+        title: language === "de" ? "Bilder erforderlich" : "Images required",
+        description: t.sell.errors.imagesRequired,
         variant: "destructive",
       });
       return;
@@ -145,14 +149,14 @@ const Verkaufen = () => {
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast({
-          title: "Eingabefehler",
+          title: t.validation.inputError,
           description: error.errors[0].message,
           variant: "destructive",
         });
       } else {
         toast({
-          title: "Fehler",
-          description: "Ihre Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
+          title: language === "de" ? "Fehler" : "Error",
+          description: t.validation.genericError,
           variant: "destructive",
         });
       }
@@ -161,16 +165,28 @@ const Verkaufen = () => {
     }
   };
 
-  const vehicleTypes = ["Fahrzeug", "Motorrad", "Baumaschinen"];
+  const vehicleTypes = language === "de" 
+    ? ["Fahrzeug", "Motorrad", "Baumaschinen"]
+    : ["Vehicle", "Motorcycle", "Construction Equipment"];
+  
+  const vehicleTypeValues = ["Fahrzeug", "Motorrad", "Baumaschinen"];
+  
   const carBrands = [
     "Audi", "BMW", "Caterpillar", "Citroën", "Dacia", "Ducati", "Ford", "Honda", "Hyundai", 
     "JCB", "Kawasaki", "Kia", "Komatsu", "KTM", "Liebherr", "Mazda", "Mercedes-Benz", "Opel", 
     "Porsche", "Renault", "Skoda", "Smart", "Suzuki", "Takeuchi", "Toyota", "Volkswagen", 
-    "Volvo", "Yamaha", "Andere"
+    "Volvo", "Yamaha", language === "de" ? "Andere" : "Other"
   ];
 
-  const fuelTypes = ["Benzin", "Diesel", "Hybrid", "Elektro", "Gas"];
-  const transmissions = ["Schaltgetriebe", "Automatik"];
+  const fuelTypes = language === "de" 
+    ? ["Benzin", "Diesel", "Hybrid", "Elektro", "Gas"]
+    : ["Petrol", "Diesel", "Hybrid", "Electric", "Gas"];
+  const fuelTypeValues = ["Benzin", "Diesel", "Hybrid", "Elektro", "Gas"];
+  
+  const transmissions = language === "de" 
+    ? ["Schaltgetriebe", "Automatik"]
+    : ["Manual", "Automatic"];
+  const transmissionValues = ["Schaltgetriebe", "Automatik"];
   
   const timeSlots = [
     "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
@@ -196,21 +212,21 @@ const Verkaufen = () => {
                 <div className="bg-accent/20 text-accent p-4 rounded-full inline-block mb-6">
                   <CheckCircle className="h-12 w-12" />
                 </div>
-                <h2 className="font-heading text-3xl font-bold mb-4">Vielen Dank!</h2>
+                <h2 className="font-heading text-3xl font-bold mb-4">{t.sell.success.title}</h2>
                 <p className="text-muted-foreground mb-4">
-                  Ihre Verkaufsanfrage wurde erfolgreich übermittelt.
+                  {t.sell.success.message}
                 </p>
                 {appointmentDate && (
                   <p className="text-foreground font-medium mb-4">
-                    Ihr Wunschtermin: {format(appointmentDate, "EEEE, dd. MMMM yyyy", { locale: de })}
-                    {appointmentTime && ` um ${appointmentTime} Uhr`}
+                    {t.sell.success.appointment} {format(appointmentDate, "EEEE, dd. MMMM yyyy", { locale: dateLocale })}
+                    {appointmentTime && ` ${language === "de" ? "um" : "at"} ${appointmentTime} ${language === "de" ? "Uhr" : ""}`}
                   </p>
                 )}
                 <p className="text-muted-foreground mb-8">
-                  Wir werden Ihre Unterlagen prüfen und uns zeitnah bei Ihnen melden, um den Termin zu bestätigen.
+                  {t.sell.success.nextSteps}
                 </p>
                 <Button onClick={() => window.location.reload()}>
-                  Weitere Anfrage stellen
+                  {t.sell.success.another}
                 </Button>
               </CardContent>
             </Card>
@@ -225,10 +241,9 @@ const Verkaufen = () => {
       {/* Page Header */}
       <section className="page-header gradient-navy">
         <div className="section-container">
-          <h1 className="font-heading text-4xl md:text-5xl font-bold mb-4">Auto verkaufen</h1>
+          <h1 className="font-heading text-4xl md:text-5xl font-bold mb-4">{t.sell.title}</h1>
           <p className="text-primary-foreground/90 text-lg max-w-2xl">
-            Verkaufen Sie Ihr Fahrzeug schnell und unkompliziert. Füllen Sie das Formular aus, 
-            wählen Sie einen Termin und wir machen Ihnen ein faires Angebot.
+            {t.sell.subtitle}
           </p>
         </div>
       </section>
@@ -239,15 +254,15 @@ const Verkaufen = () => {
           <div className="grid sm:grid-cols-3 gap-6 text-center">
             <div className="flex items-center justify-center gap-3">
               <Euro className="h-6 w-6 text-accent" />
-              <span className="font-medium">Faire Preise</span>
+              <span className="font-medium">{t.sell.benefits.fairPrices}</span>
             </div>
             <div className="flex items-center justify-center gap-3">
               <Clock className="h-6 w-6 text-accent" />
-              <span className="font-medium">Schnelle Abwicklung</span>
+              <span className="font-medium">{t.sell.benefits.fast}</span>
             </div>
             <div className="flex items-center justify-center gap-3">
               <Shield className="h-6 w-6 text-accent" />
-              <span className="font-medium">Sichere Bezahlung</span>
+              <span className="font-medium">{t.sell.benefits.secure}</span>
             </div>
           </div>
         </div>
@@ -263,10 +278,10 @@ const Verkaufen = () => {
                   <form onSubmit={handleSubmit} className="space-y-8">
                     {/* Contact Info */}
                     <div>
-                      <h3 className="font-heading text-xl font-semibold mb-4">Ihre Kontaktdaten</h3>
+                      <h3 className="font-heading text-xl font-semibold mb-4">{t.sell.form.contact.title}</h3>
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="customer_name">Name *</Label>
+                          <Label htmlFor="customer_name">{t.sell.form.contact.name} *</Label>
                           <Input
                             id="customer_name"
                             name="customer_name"
@@ -277,7 +292,7 @@ const Verkaufen = () => {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="customer_email">E-Mail *</Label>
+                          <Label htmlFor="customer_email">{t.sell.form.contact.email} *</Label>
                           <Input
                             id="customer_email"
                             name="customer_email"
@@ -289,7 +304,7 @@ const Verkaufen = () => {
                           />
                         </div>
                         <div className="space-y-2 sm:col-span-2">
-                          <Label htmlFor="customer_phone">Telefon *</Label>
+                          <Label htmlFor="customer_phone">{t.sell.form.contact.phone} *</Label>
                           <Input
                             id="customer_phone"
                             name="customer_phone"
@@ -305,26 +320,30 @@ const Verkaufen = () => {
 
                     {/* Vehicle Info */}
                     <div>
-                      <h3 className="font-heading text-xl font-semibold mb-4">Fahrzeugdaten</h3>
+                      <h3 className="font-heading text-xl font-semibold mb-4">{t.sell.form.vehicle.title}</h3>
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label>Fahrzeugtyp *</Label>
-                          <Select value={formData.vehicle_type} onValueChange={(v) => setFormData({ ...formData, vehicle_type: v })} required>
+                          <Label>{t.sell.form.vehicle.type} *</Label>
+                          <Select 
+                            value={formData.vehicle_type} 
+                            onValueChange={(v) => setFormData({ ...formData, vehicle_type: v })} 
+                            required
+                          >
                             <SelectTrigger className="input-classic">
-                              <SelectValue placeholder="Typ wählen" />
+                              <SelectValue placeholder={language === "de" ? "Typ wählen" : "Select type"} />
                             </SelectTrigger>
                             <SelectContent>
-                              {vehicleTypes.map((type) => (
-                                <SelectItem key={type} value={type}>{type}</SelectItem>
+                              {vehicleTypeValues.map((type, idx) => (
+                                <SelectItem key={type} value={type}>{vehicleTypes[idx]}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
                         </div>
                         <div className="space-y-2">
-                          <Label>Marke *</Label>
+                          <Label>{t.sell.form.vehicle.brand} *</Label>
                           <Select value={formData.brand} onValueChange={(v) => handleSelectChange("brand", v)} required>
                             <SelectTrigger className="input-classic">
-                              <SelectValue placeholder="Marke wählen" />
+                              <SelectValue placeholder={language === "de" ? "Marke wählen" : "Select brand"} />
                             </SelectTrigger>
                             <SelectContent>
                               {carBrands.map((brand) => (
@@ -334,7 +353,7 @@ const Verkaufen = () => {
                           </Select>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="model">Modell *</Label>
+                          <Label htmlFor="model">{t.sell.form.vehicle.model} *</Label>
                           <Input
                             id="model"
                             name="model"
@@ -342,20 +361,20 @@ const Verkaufen = () => {
                             onChange={handleChange}
                             required
                             className="input-classic"
-                            placeholder="z.B. Golf 7"
+                            placeholder={language === "de" ? "z.B. Golf 7" : "e.g. Golf 7"}
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label>Erstzulassung *</Label>
+                          <Label>{t.sell.form.vehicle.firstRegistration} *</Label>
                           <MonthYearPicker
                             value={firstRegistrationDate}
                             onChange={setFirstRegistrationDate}
-                            placeholder="Monat/Jahr wählen"
+                            placeholder={language === "de" ? "Monat/Jahr wählen" : "Select month/year"}
                             className="input-classic"
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="mileage">Kilometerstand *</Label>
+                          <Label htmlFor="mileage">{t.sell.form.vehicle.mileage} *</Label>
                           <Input
                             id="mileage"
                             name="mileage"
@@ -365,37 +384,37 @@ const Verkaufen = () => {
                             onChange={handleChange}
                             required
                             className="input-classic"
-                            placeholder="z.B. 75000"
+                            placeholder={language === "de" ? "z.B. 75000" : "e.g. 75000"}
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label>Kraftstoff *</Label>
+                          <Label>{t.sell.form.vehicle.fuel} *</Label>
                           <Select onValueChange={(v) => handleSelectChange("fuel_type", v)} required>
                             <SelectTrigger className="input-classic">
-                              <SelectValue placeholder="Kraftstoff wählen" />
+                              <SelectValue placeholder={language === "de" ? "Kraftstoff wählen" : "Select fuel"} />
                             </SelectTrigger>
                             <SelectContent>
-                              {fuelTypes.map((fuel) => (
-                                <SelectItem key={fuel} value={fuel}>{fuel}</SelectItem>
+                              {fuelTypeValues.map((fuel, idx) => (
+                                <SelectItem key={fuel} value={fuel}>{fuelTypes[idx]}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
                         </div>
                         <div className="space-y-2">
-                          <Label>Getriebe *</Label>
+                          <Label>{t.sell.form.vehicle.transmission} *</Label>
                           <Select onValueChange={(v) => handleSelectChange("transmission", v)} required>
                             <SelectTrigger className="input-classic">
-                              <SelectValue placeholder="Getriebe wählen" />
+                              <SelectValue placeholder={language === "de" ? "Getriebe wählen" : "Select transmission"} />
                             </SelectTrigger>
                             <SelectContent>
-                              {transmissions.map((trans) => (
-                                <SelectItem key={trans} value={trans}>{trans}</SelectItem>
+                              {transmissionValues.map((trans, idx) => (
+                                <SelectItem key={trans} value={trans}>{transmissions[idx]}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="previous_owners">Vorbesitzer</Label>
+                          <Label htmlFor="previous_owners">{t.sell.form.vehicle.previousOwners}</Label>
                           <Input
                             id="previous_owners"
                             name="previous_owners"
@@ -404,22 +423,22 @@ const Verkaufen = () => {
                             value={formData.previous_owners}
                             onChange={handleChange}
                             className="input-classic"
-                            placeholder="z.B. 2"
+                            placeholder={language === "de" ? "z.B. 2" : "e.g. 2"}
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="color">Farbe</Label>
+                          <Label htmlFor="color">{t.sell.form.vehicle.color}</Label>
                           <Input
                             id="color"
                             name="color"
                             value={formData.color}
                             onChange={handleChange}
                             className="input-classic"
-                            placeholder="z.B. Schwarz Metallic"
+                            placeholder={language === "de" ? "z.B. Schwarz" : "e.g. Black"}
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="asking_price">Preisvorstellung (€)</Label>
+                          <Label htmlFor="asking_price">{t.sell.form.vehicle.askingPrice} (€)</Label>
                           <Input
                             id="asking_price"
                             name="asking_price"
@@ -428,37 +447,31 @@ const Verkaufen = () => {
                             value={formData.asking_price}
                             onChange={handleChange}
                             className="input-classic"
-                            placeholder="Optional"
+                            placeholder={language === "de" ? "z.B. 15000" : "e.g. 15000"}
                           />
                         </div>
                       </div>
-
-                      <div className="space-y-2 mt-4">
-                        <Label htmlFor="description">Beschreibung / Ausstattung</Label>
+                      <div className="mt-4 space-y-2">
+                        <Label htmlFor="description">{t.sell.form.vehicle.description}</Label>
                         <Textarea
                           id="description"
                           name="description"
                           value={formData.description}
                           onChange={handleChange}
-                          rows={4}
-                          className="input-classic resize-none"
-                          placeholder="Beschreiben Sie Ihr Fahrzeug, besondere Ausstattung, Zustand, etc."
+                          className="input-classic"
+                          rows={3}
+                          placeholder={language === "de" ? "Beschreiben Sie den Zustand und besondere Ausstattung..." : "Describe the condition and special features..."}
                         />
                       </div>
                     </div>
 
-                    {/* Appointment Section */}
+                    {/* Appointment Selection */}
                     <div>
-                      <h3 className="font-heading text-xl font-semibold mb-4">
-                        <CalendarIcon className="h-5 w-5 inline-block mr-2 text-accent" />
-                        Wunschtermin wählen
-                      </h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Wählen Sie einen passenden Termin für die Fahrzeugbegutachtung bei uns vor Ort.
-                      </p>
+                      <h3 className="font-heading text-xl font-semibold mb-4">{t.sell.form.appointment.title}</h3>
+                      <p className="text-muted-foreground text-sm mb-4">{t.sell.form.appointment.subtitle}</p>
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label>Datum</Label>
+                          <Label>{t.sell.form.appointment.date}</Label>
                           <Popover>
                             <PopoverTrigger asChild>
                               <Button
@@ -469,7 +482,7 @@ const Verkaufen = () => {
                                 )}
                               >
                                 <CalendarIcon className="mr-2 h-4 w-4" />
-                                {appointmentDate ? format(appointmentDate, "dd.MM.yyyy", { locale: de }) : "Datum wählen"}
+                                {appointmentDate ? format(appointmentDate, "PPP", { locale: dateLocale }) : t.sell.form.appointment.selectDate}
                               </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto p-0" align="start">
@@ -478,22 +491,21 @@ const Verkaufen = () => {
                                 selected={appointmentDate}
                                 onSelect={setAppointmentDate}
                                 disabled={disabledDays}
+                                locale={dateLocale}
                                 initialFocus
-                                locale={de}
-                                className="pointer-events-auto"
                               />
                             </PopoverContent>
                           </Popover>
                         </div>
                         <div className="space-y-2">
-                          <Label>Uhrzeit</Label>
-                          <Select onValueChange={setAppointmentTime} value={appointmentTime}>
+                          <Label>{t.sell.form.appointment.time}</Label>
+                          <Select value={appointmentTime} onValueChange={setAppointmentTime}>
                             <SelectTrigger className="input-classic">
-                              <SelectValue placeholder="Uhrzeit wählen" />
+                              <SelectValue placeholder={t.sell.form.appointment.selectTime} />
                             </SelectTrigger>
                             <SelectContent>
                               {timeSlots.map((time) => (
-                                <SelectItem key={time} value={time}>{time} Uhr</SelectItem>
+                                <SelectItem key={time} value={time}>{time} {language === "de" ? "Uhr" : ""}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
@@ -501,35 +513,29 @@ const Verkaufen = () => {
                       </div>
                     </div>
 
-                    {/* Images */}
+                    {/* Image Upload */}
                     <div>
-                      <h3 className="font-heading text-xl font-semibold mb-4">Fahrzeugbilder *</h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Laden Sie mindestens ein Bild Ihres Fahrzeugs hoch (max. 10 Bilder).
+                      <h3 className="font-heading text-xl font-semibold mb-2">{t.sell.form.images.title}</h3>
+                      <p className="text-muted-foreground text-sm mb-4">
+                        {t.sell.form.images.subtitle}
                       </p>
-                      
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        {images.map((image, index) => (
-                          <div key={index} className="relative aspect-square bg-muted rounded-lg overflow-hidden">
-                            <img
-                              src={URL.createObjectURL(image)}
-                              alt={`Fahrzeugbild ${index + 1}`}
-                              className="w-full h-full object-cover"
-                            />
+                        {images.map((img, idx) => (
+                          <div key={idx} className="relative aspect-square bg-muted rounded-lg overflow-hidden">
+                            <img src={URL.createObjectURL(img)} alt="" className="w-full h-full object-cover" />
                             <button
                               type="button"
-                              onClick={() => removeImage(index)}
-                              className="absolute top-2 right-2 bg-destructive text-destructive-foreground p-1 rounded-full hover:bg-destructive/90"
+                              onClick={() => removeImage(idx)}
+                              className="absolute top-2 right-2 bg-destructive text-destructive-foreground p-1 rounded-full"
                             >
                               <X className="h-4 w-4" />
                             </button>
                           </div>
                         ))}
-                        
                         {images.length < 10 && (
-                          <label className="aspect-square border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors">
+                          <label className="aspect-square border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors">
                             <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-                            <span className="text-sm text-muted-foreground">Bild hinzufügen</span>
+                            <span className="text-sm text-muted-foreground">{t.sell.form.images.button}</span>
                             <input
                               type="file"
                               accept="image/*"
@@ -540,11 +546,23 @@ const Verkaufen = () => {
                           </label>
                         )}
                       </div>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        {images.length}/10 {language === "de" ? "Bilder" : "images"} • {t.sell.form.images.required}
+                      </p>
                     </div>
 
-                    <Button type="submit" disabled={isSubmitting} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
-                      <Send className="h-4 w-4 mr-2" />
-                      {isSubmitting ? "Wird gesendet..." : "Verkaufsanfrage senden"}
+                    <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+                      {isSubmitting ? (
+                        <>
+                          <span className="animate-spin mr-2">⏳</span>
+                          {t.sell.form.submitting}
+                        </>
+                      ) : (
+                        <>
+                          <Send className="mr-2 h-4 w-4" />
+                          {t.sell.form.submit}
+                        </>
+                      )}
                     </Button>
                   </form>
                 </CardContent>
@@ -552,51 +570,47 @@ const Verkaufen = () => {
             </div>
 
             {/* Sidebar */}
-            <div className="space-y-6">
-              <Card className="border-border">
+            <div>
+              <Card className="border-border sticky top-24">
                 <CardContent className="p-6">
-                  <h3 className="font-heading text-lg font-semibold mb-4">So geht's weiter</h3>
-                  <ol className="space-y-4">
-                    <li className="flex gap-3">
-                      <span className="bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">1</span>
-                      <span className="text-sm">Formular ausfüllen & Termin wählen</span>
-                    </li>
-                    <li className="flex gap-3">
-                      <span className="bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">2</span>
-                      <span className="text-sm">Wir prüfen Ihre Anfrage und bestätigen den Termin</span>
-                    </li>
-                    <li className="flex gap-3">
-                      <span className="bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">3</span>
-                      <span className="text-sm">Fahrzeug vorbeibringen & Bargeld erhalten</span>
-                    </li>
-                  </ol>
-                </CardContent>
-              </Card>
+                  <h3 className="font-heading text-lg font-semibold mb-4">{t.sell.sidebar.title}</h3>
+                  <div className="space-y-4">
+                    <div className="flex gap-3">
+                      <div className="bg-primary text-primary-foreground w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">1</div>
+                      <div>
+                        <p className="font-medium">{t.sell.sidebar.step1.title}</p>
+                        <p className="text-sm text-muted-foreground">{t.sell.sidebar.step1.description}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <div className="bg-primary text-primary-foreground w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">2</div>
+                      <div>
+                        <p className="font-medium">{t.sell.sidebar.step2.title}</p>
+                        <p className="text-sm text-muted-foreground">{t.sell.sidebar.step2.description}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <div className="bg-primary text-primary-foreground w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">3</div>
+                      <div>
+                        <p className="font-medium">{t.sell.sidebar.step3.title}</p>
+                        <p className="text-sm text-muted-foreground">{t.sell.sidebar.step3.description}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <div className="bg-accent text-accent-foreground w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">4</div>
+                      <div>
+                        <p className="font-medium">{t.sell.sidebar.step4.title}</p>
+                        <p className="text-sm text-muted-foreground">{t.sell.sidebar.step4.description}</p>
+                      </div>
+                    </div>
+                  </div>
 
-              <Card className="border-border bg-accent/5">
-                <CardContent className="p-6">
-                  <h3 className="font-heading text-lg font-semibold mb-2">Fragen?</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Rufen Sie uns an – wir beraten Sie gerne.
-                  </p>
-                  <Button variant="outline" className="w-full" asChild>
-                    <a href="tel:+4962046129035">
-                      <Phone className="h-4 w-4 mr-2" />
-                      06204 / 6129035
+                  <div className="mt-6 pt-6 border-t border-border">
+                    <p className="text-sm text-muted-foreground mb-2">{t.sell.sidebar.questions}</p>
+                    <a href={`tel:${t.common.phone}`} className="flex items-center gap-2 text-primary font-semibold">
+                      <Phone className="h-4 w-4" />
+                      {t.common.phone}
                     </a>
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card className="border-border">
-                <CardContent className="p-6">
-                  <h3 className="font-heading text-lg font-semibold mb-4">Wir kaufen alle Marken</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {carBrands.slice(0, -1).map((brand) => (
-                      <span key={brand} className="bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm">
-                        {brand}
-                      </span>
-                    ))}
                   </div>
                 </CardContent>
               </Card>

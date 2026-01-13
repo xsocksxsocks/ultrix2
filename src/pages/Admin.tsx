@@ -34,7 +34,7 @@ const Admin = () => {
   const [editCarImages, setEditCarImages] = useState<File[]>([]);
   const [newCarRegistrationDate, setNewCarRegistrationDate] = useState<Date | undefined>();
   const [editCarRegistrationDate, setEditCarRegistrationDate] = useState<Date | undefined>();
-  const [newCarData, setNewCarData] = useState({
+const [newCarData, setNewCarData] = useState({
     vehicle_type: "Fahrzeug",
     brand: "",
     model: "",
@@ -46,7 +46,9 @@ const Admin = () => {
     power_hp: "",
     price: "",
     description: "",
+    description_en: "",
     features: "",
+    features_en: "",
     is_featured: false,
     vat_deductible: false,
   });
@@ -62,11 +64,15 @@ const Admin = () => {
     power_hp: "",
     price: "",
     description: "",
+    description_en: "",
     features: "",
+    features_en: "",
     is_featured: false,
     vat_deductible: false,
     existingImages: [] as string[],
   });
+  const [newCarLangTab, setNewCarLangTab] = useState<"de" | "en">("de");
+  const [editCarLangTab, setEditCarLangTab] = useState<"de" | "en">("de");
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -514,7 +520,9 @@ const Admin = () => {
         power_hp: newCarData.power_hp ? parseInt(newCarData.power_hp) : null,
         price: parseFloat(newCarData.price),
         description: newCarData.description || null,
+        description_en: newCarData.description_en || null,
         features: newCarData.features ? newCarData.features.split(",").map(f => f.trim()) : null,
+        features_en: newCarData.features_en ? newCarData.features_en.split(",").map(f => f.trim()) : null,
         images: imageUrls,
         is_featured: newCarData.is_featured,
         vat_deductible: newCarData.vat_deductible,
@@ -526,9 +534,10 @@ const Admin = () => {
       setIsAddCarOpen(false);
       setNewCarImages([]);
       setNewCarRegistrationDate(undefined);
+      setNewCarLangTab("de");
       setNewCarData({
         vehicle_type: "Fahrzeug", brand: "", model: "", mileage: "", fuel_type: "", transmission: "",
-        previous_owners: "", color: "", power_hp: "", price: "", description: "", features: "", is_featured: false, vat_deductible: false,
+        previous_owners: "", color: "", power_hp: "", price: "", description: "", description_en: "", features: "", features_en: "", is_featured: false, vat_deductible: false,
       });
       queryClient.invalidateQueries({ queryKey: ["admin-cars"] });
     } catch (error: any) {
@@ -591,7 +600,9 @@ const Admin = () => {
           power_hp: editCarData.power_hp ? parseInt(editCarData.power_hp) : null,
           price: parseFloat(editCarData.price),
           description: editCarData.description || null,
+          description_en: editCarData.description_en || null,
           features: editCarData.features ? editCarData.features.split(",").map(f => f.trim()) : null,
+          features_en: editCarData.features_en ? editCarData.features_en.split(",").map(f => f.trim()) : null,
           images: imageUrls,
           is_featured: editCarData.is_featured,
           vat_deductible: editCarData.vat_deductible,
@@ -630,12 +641,15 @@ const Admin = () => {
       power_hp: car.power_hp?.toString() || "",
       price: car.price.toString(),
       description: car.description || "",
+      description_en: car.description_en || "",
       features: car.features?.join(", ") || "",
+      features_en: car.features_en?.join(", ") || "",
       is_featured: car.is_featured || false,
       vat_deductible: car.vat_deductible || false,
       existingImages: car.images || [],
     });
     setEditCarImages([]);
+    setEditCarLangTab("de");
     setIsEditCarOpen(true);
   };
 
@@ -1358,21 +1372,66 @@ const Admin = () => {
                 <Input value={newCarData.color} onChange={(e) => setNewCarData({ ...newCarData, color: e.target.value })} />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label>Ausstattung (kommagetrennt)</Label>
-              <Input
-                value={newCarData.features}
-                onChange={(e) => setNewCarData({ ...newCarData, features: e.target.value })}
-                placeholder="z.B. Klimaanlage, Navigationssystem, Ledersitze"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Beschreibung</Label>
-              <Textarea
-                value={newCarData.description}
-                onChange={(e) => setNewCarData({ ...newCarData, description: e.target.value })}
-                rows={3}
-              />
+            {/* Language Tabs for Description and Features */}
+            <div className="space-y-4 border rounded-lg p-4">
+              <div className="flex gap-2 border-b pb-2">
+                <Button
+                  type="button"
+                  variant={newCarLangTab === "de" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setNewCarLangTab("de")}
+                >
+                  Deutsch
+                </Button>
+                <Button
+                  type="button"
+                  variant={newCarLangTab === "en" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setNewCarLangTab("en")}
+                >
+                  English
+                </Button>
+              </div>
+              
+              {newCarLangTab === "de" ? (
+                <>
+                  <div className="space-y-2">
+                    <Label>Ausstattung (kommagetrennt)</Label>
+                    <Input
+                      value={newCarData.features}
+                      onChange={(e) => setNewCarData({ ...newCarData, features: e.target.value })}
+                      placeholder="z.B. Klimaanlage, Navigationssystem, Ledersitze"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Beschreibung</Label>
+                    <Textarea
+                      value={newCarData.description}
+                      onChange={(e) => setNewCarData({ ...newCarData, description: e.target.value })}
+                      rows={3}
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <Label>Features (comma separated)</Label>
+                    <Input
+                      value={newCarData.features_en}
+                      onChange={(e) => setNewCarData({ ...newCarData, features_en: e.target.value })}
+                      placeholder="e.g. Air conditioning, Navigation, Leather seats"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Description</Label>
+                    <Textarea
+                      value={newCarData.description_en}
+                      onChange={(e) => setNewCarData({ ...newCarData, description_en: e.target.value })}
+                      rows={3}
+                    />
+                  </div>
+                </>
+              )}
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
@@ -1518,21 +1577,66 @@ const Admin = () => {
                 <Input value={editCarData.color} onChange={(e) => setEditCarData({ ...editCarData, color: e.target.value })} />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label>Ausstattung (kommagetrennt)</Label>
-              <Input
-                value={editCarData.features}
-                onChange={(e) => setEditCarData({ ...editCarData, features: e.target.value })}
-                placeholder="z.B. Klimaanlage, Navigationssystem, Ledersitze"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Beschreibung</Label>
-              <Textarea
-                value={editCarData.description}
-                onChange={(e) => setEditCarData({ ...editCarData, description: e.target.value })}
-                rows={3}
-              />
+            {/* Language Tabs for Description and Features */}
+            <div className="space-y-4 border rounded-lg p-4">
+              <div className="flex gap-2 border-b pb-2">
+                <Button
+                  type="button"
+                  variant={editCarLangTab === "de" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setEditCarLangTab("de")}
+                >
+                  Deutsch
+                </Button>
+                <Button
+                  type="button"
+                  variant={editCarLangTab === "en" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setEditCarLangTab("en")}
+                >
+                  English
+                </Button>
+              </div>
+              
+              {editCarLangTab === "de" ? (
+                <>
+                  <div className="space-y-2">
+                    <Label>Ausstattung (kommagetrennt)</Label>
+                    <Input
+                      value={editCarData.features}
+                      onChange={(e) => setEditCarData({ ...editCarData, features: e.target.value })}
+                      placeholder="z.B. Klimaanlage, Navigationssystem, Ledersitze"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Beschreibung</Label>
+                    <Textarea
+                      value={editCarData.description}
+                      onChange={(e) => setEditCarData({ ...editCarData, description: e.target.value })}
+                      rows={3}
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <Label>Features (comma separated)</Label>
+                    <Input
+                      value={editCarData.features_en}
+                      onChange={(e) => setEditCarData({ ...editCarData, features_en: e.target.value })}
+                      placeholder="e.g. Air conditioning, Navigation, Leather seats"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Description</Label>
+                    <Textarea
+                      value={editCarData.description_en}
+                      onChange={(e) => setEditCarData({ ...editCarData, description_en: e.target.value })}
+                      rows={3}
+                    />
+                  </div>
+                </>
+              )}
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">

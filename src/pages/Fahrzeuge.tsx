@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
-import { de } from "date-fns/locale";
+import { de, enUS } from "date-fns/locale";
 import {
   Car,
   Fuel,
@@ -14,7 +14,6 @@ import {
   Award,
   FileCheck,
   Handshake,
-  Users,
   MousePointerClick,
   Bike,
   Truck,
@@ -23,9 +22,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/layout/Layout";
+import { useLanguage, useLocalizedRoute } from "@/i18n/LanguageContext";
+
 interface CarForSale {
   id: string;
   listing_number: string | null;
@@ -41,7 +41,9 @@ interface CarForSale {
   previous_owners: number | null;
   price: number;
   description: string | null;
+  description_en: string | null;
   features: string[] | null;
+  features_en: string[] | null;
   images: string[];
   is_sold: boolean;
   is_reserved: boolean;
@@ -53,6 +55,9 @@ const Fahrzeuge = () => {
   const [selectedCar, setSelectedCar] = useState<CarForSale | null>(null);
   const [vehicleTypeFilter, setVehicleTypeFilter] = useState<string>("all");
   const navigate = useNavigate();
+  const { language, t } = useLanguage();
+  const getRoute = useLocalizedRoute();
+  const dateLocale = language === "de" ? de : enUS;
 
   const { data: cars, isLoading } = useQuery({
     queryKey: ["cars-for-sale"],
@@ -82,6 +87,16 @@ const Fahrzeuge = () => {
     return new Intl.NumberFormat("de-DE").format(mileage) + " km";
   };
 
+  const getDescription = (car: CarForSale) => {
+    if (language === "en" && car.description_en) return car.description_en;
+    return car.description;
+  };
+
+  const getFeatures = (car: CarForSale) => {
+    if (language === "en" && car.features_en && car.features_en.length > 0) return car.features_en;
+    return car.features;
+  };
+
   const filteredCars = cars?.filter((car) => {
     if (vehicleTypeFilter === "all") return true;
     if (vehicleTypeFilter === "Fahrzeug") {
@@ -94,9 +109,32 @@ const Fahrzeuge = () => {
   });
 
   const getVehicleTypeDisplay = (type: string | null) => {
-    if (!type || type === "Pkw") return "Fahrzeug";
-    if (type === "Baumaschine") return "Baumaschinen";
+    if (!type || type === "Pkw") return t.vehicles.filters.vehicle;
+    if (type === "Baumaschine" || type === "Baumaschinen") return t.vehicles.filters.construction;
+    if (type === "Motorrad") return t.vehicles.filters.motorcycle;
     return type;
+  };
+
+  const getTransmissionDisplay = (transmission: string) => {
+    if (language === "en") {
+      if (transmission === "Automatik") return "Automatic";
+      if (transmission === "Schaltgetriebe") return "Manual";
+    }
+    return transmission;
+  };
+
+  const getFuelTypeDisplay = (fuelType: string) => {
+    if (language === "en") {
+      const fuelMap: Record<string, string> = {
+        "Benzin": "Petrol",
+        "Diesel": "Diesel",
+        "Elektro": "Electric",
+        "Hybrid": "Hybrid",
+        "Gas": "Gas",
+      };
+      return fuelMap[fuelType] || fuelType;
+    }
+    return fuelType;
   };
 
   return (
@@ -104,10 +142,9 @@ const Fahrzeuge = () => {
       {/* Page Header */}
       <section className="page-header gradient-navy">
         <div className="section-container">
-          <h1 className="font-heading text-4xl md:text-5xl font-bold mb-4">Unsere Fahrzeuge</h1>
+          <h1 className="font-heading text-4xl md:text-5xl font-bold mb-4">{t.vehicles.title}</h1>
           <p className="text-primary-foreground/90 text-lg max-w-2xl">
-            Entdecken Sie unsere Auswahl an geprüften Gebrauchtwagen. Alle Fahrzeuge werden sorgfältig geprüft und zu
-            fairen Preisen angeboten.
+            {t.vehicles.subtitle}
           </p>
         </div>
       </section>
@@ -120,11 +157,9 @@ const Fahrzeuge = () => {
               <ShieldCheck className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h3 className="font-heading text-lg font-semibold mb-2">Fahrzeugvermittlung mit Garantie</h3>
+              <h3 className="font-heading text-lg font-semibold mb-2">{t.vehicles.banner.title}</h3>
               <p className="text-muted-foreground">
-                Wir vermitteln Fahrzeuge im Kundenauftrag. Jedes Fahrzeug durchläuft vor dem Verkauf unsere umfassende
-                technische Prüfung. Den Fahrzeugzustand garantieren wir Ihnen vertraglich – ohne versteckte Kosten oder
-                zusätzliche Gebühren für Sie als Käufer.
+                {t.vehicles.banner.description}
               </p>
             </div>
           </div>
@@ -135,29 +170,29 @@ const Fahrzeuge = () => {
               <div className="bg-accent/10 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
                 <FileCheck className="h-6 w-6 text-accent" />
               </div>
-              <p className="font-semibold text-sm">Technisch geprüft</p>
-              <p className="text-xs text-muted-foreground mt-1">Umfassende Inspektion</p>
+              <p className="font-semibold text-sm">{t.vehicles.badges.inspected.title}</p>
+              <p className="text-xs text-muted-foreground mt-1">{t.vehicles.badges.inspected.subtitle}</p>
             </div>
             <div className="bg-card p-4 rounded-lg border border-border text-center">
               <div className="bg-accent/10 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Award className="h-6 w-6 text-accent" />
               </div>
-              <p className="font-semibold text-sm">Zustandsgarantie</p>
-              <p className="text-xs text-muted-foreground mt-1">Vertraglich gesichert</p>
+              <p className="font-semibold text-sm">{t.vehicles.badges.guarantee.title}</p>
+              <p className="text-xs text-muted-foreground mt-1">{t.vehicles.badges.guarantee.subtitle}</p>
             </div>
             <div className="bg-card p-4 rounded-lg border border-border text-center">
               <div className="bg-accent/10 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Handshake className="h-6 w-6 text-accent" />
               </div>
-              <p className="font-semibold text-sm">Keine Zusatzkosten</p>
-              <p className="text-xs text-muted-foreground mt-1">Lieferung deutschlandweit inkl.</p>
+              <p className="font-semibold text-sm">{t.vehicles.badges.noCosts.title}</p>
+              <p className="text-xs text-muted-foreground mt-1">{t.vehicles.badges.noCosts.subtitle}</p>
             </div>
             <div className="bg-card p-4 rounded-lg border border-border text-center">
               <div className="bg-accent/10 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
                 <CheckCircle className="h-6 w-6 text-accent" />
               </div>
-              <p className="font-semibold text-sm">Geprüfte Historie</p>
-              <p className="text-xs text-muted-foreground mt-1">Transparente Herkunft</p>
+              <p className="font-semibold text-sm">{t.vehicles.badges.history.title}</p>
+              <p className="text-xs text-muted-foreground mt-1">{t.vehicles.badges.history.subtitle}</p>
             </div>
           </div>
         </div>
@@ -172,7 +207,7 @@ const Fahrzeuge = () => {
               onClick={() => setVehicleTypeFilter("all")}
               className="flex items-center gap-2"
             >
-              Alle
+              {t.vehicles.filters.all}
             </Button>
             <Button
               variant={vehicleTypeFilter === "Fahrzeug" ? "default" : "outline"}
@@ -180,7 +215,7 @@ const Fahrzeuge = () => {
               className="flex items-center gap-2"
             >
               <Car className="h-4 w-4" />
-              Fahrzeug
+              {t.vehicles.filters.vehicle}
             </Button>
             <Button
               variant={vehicleTypeFilter === "Motorrad" ? "default" : "outline"}
@@ -188,7 +223,7 @@ const Fahrzeuge = () => {
               className="flex items-center gap-2"
             >
               <Bike className="h-4 w-4" />
-              Motorrad
+              {t.vehicles.filters.motorcycle}
             </Button>
             <Button
               variant={vehicleTypeFilter === "Baumaschinen" ? "default" : "outline"}
@@ -196,7 +231,7 @@ const Fahrzeuge = () => {
               className="flex items-center gap-2"
             >
               <Truck className="h-4 w-4" />
-              Baumaschinen
+              {t.vehicles.filters.construction}
             </Button>
           </div>
 
@@ -233,15 +268,15 @@ const Fahrzeuge = () => {
                       </div>
                     )}
                     {car.is_featured && !car.is_sold && !car.is_reserved && (
-                      <Badge className="absolute top-3 left-3 bg-accent text-accent-foreground">Empfohlen</Badge>
+                      <Badge className="absolute top-3 left-3 bg-accent text-accent-foreground">{t.vehicles.card.recommended}</Badge>
                     )}
                     {car.is_sold && (
                       <Badge className="absolute top-3 left-3 bg-destructive text-destructive-foreground">
-                        Verkauft
+                        {t.vehicles.card.sold}
                       </Badge>
                     )}
                     {car.is_reserved && !car.is_sold && (
-                      <Badge className="absolute top-3 left-3 bg-amber-500 text-white">Reserviert</Badge>
+                      <Badge className="absolute top-3 left-3 bg-amber-500 text-white">{t.vehicles.card.reserved}</Badge>
                     )}
                   </div>
                   <CardContent className="p-6">
@@ -257,15 +292,15 @@ const Fahrzeuge = () => {
                     </h3>
                     <div className="mb-4">
                       <p className="text-2xl font-bold text-primary">
-                        {formatPrice(car.price)} <span className="text-base font-normal">brutto</span>
+                        {formatPrice(car.price)} <span className="text-base font-normal">{t.common.gross}</span>
                       </p>
-                      {car.vat_deductible && <p className="text-sm text-accent font-medium">MwSt. ausweisbar</p>}
+                      {car.vat_deductible && <p className="text-sm text-accent font-medium">{t.vehicles.card.vatDeductible}</p>}
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 text-sm text-muted-foreground">
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4" />
-                        <span>EZ {format(new Date(car.first_registration_date), "MM/yyyy")}</span>
+                        <span>{language === "de" ? "EZ" : "Reg."} {format(new Date(car.first_registration_date), "MM/yyyy")}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Gauge className="h-4 w-4" />
@@ -273,29 +308,29 @@ const Fahrzeuge = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <Fuel className="h-4 w-4" />
-                        <span>{car.fuel_type}</span>
+                        <span>{getFuelTypeDisplay(car.fuel_type)}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Settings2 className="h-4 w-4" />
-                        <span>{car.transmission}</span>
+                        <span>{getTransmissionDisplay(car.transmission)}</span>
                       </div>
                       {car.listing_number && (
                         <div className="flex items-center gap-2">
-                          <span>Inserat-Nr. {car.listing_number}</span>
+                          <span>{t.vehicles.card.listingNumber} {car.listing_number}</span>
                         </div>
                       )}
                     </div>
                     <div className="mt-3 pt-3 border-t border-border text-sm flex items-center justify-between">
                       <div>
-                        <span className="text-muted-foreground">MwSt. ausweisbar: </span>
+                        <span className="text-muted-foreground">{t.vehicles.card.vatDeductible}: </span>
                         <span className={car.vat_deductible ? "text-accent font-medium" : "text-muted-foreground"}>
-                          {car.vat_deductible ? "Ja" : "Nein"}
+                          {car.vat_deductible ? t.common.yes : t.common.no}
                         </span>
                       </div>
                       {!car.is_sold && !car.is_reserved && (
                         <div className="flex items-center gap-1 text-primary text-xs font-medium">
                           <MousePointerClick className="h-3 w-3" />
-                          <span>Details ansehen</span>
+                          <span>{t.vehicles.card.viewDetails}</span>
                         </div>
                       )}
                     </div>
@@ -308,17 +343,17 @@ const Fahrzeuge = () => {
               <Car className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
               <h2 className="font-heading text-2xl font-semibold mb-2">
                 {vehicleTypeFilter !== "all"
-                  ? `Keine ${vehicleTypeFilter === "Fahrzeug" ? "Fahrzeuge" : vehicleTypeFilter === "Motorrad" ? "Motorräder" : "Baumaschinen"} verfügbar`
-                  : "Keine Fahrzeuge verfügbar"}
+                  ? t.vehicles.empty.titleFiltered
+                  : t.vehicles.empty.title}
               </h2>
               <p className="text-muted-foreground">
                 {vehicleTypeFilter !== "all"
-                  ? "Versuchen Sie einen anderen Filter oder schauen Sie bald wieder vorbei!"
-                  : "Aktuell sind keine Fahrzeuge im Angebot. Schauen Sie bald wieder vorbei!"}
+                  ? t.vehicles.empty.subtitleFiltered
+                  : t.vehicles.empty.subtitle}
               </p>
               {vehicleTypeFilter !== "all" && (
                 <Button variant="outline" className="mt-4" onClick={() => setVehicleTypeFilter("all")}>
-                  Alle Fahrzeuge anzeigen
+                  {t.vehicles.empty.showAll}
                 </Button>
               )}
             </div>
@@ -343,7 +378,7 @@ const Fahrzeuge = () => {
                     <img
                       key={idx}
                       src={img}
-                      alt={`${selectedCar.brand} ${selectedCar.model} - Bild ${idx + 1}`}
+                      alt={`${selectedCar.brand} ${selectedCar.model} - ${language === "de" ? "Bild" : "Image"} ${idx + 1}`}
                       className="w-full h-48 object-contain bg-muted rounded-lg"
                     />
                   ))}
@@ -353,76 +388,76 @@ const Fahrzeuge = () => {
               <div className="space-y-6">
                 <div>
                   <p className="text-3xl font-bold text-primary">
-                    {formatPrice(selectedCar.price)} <span className="text-lg font-normal">brutto</span>
+                    {formatPrice(selectedCar.price)} <span className="text-lg font-normal">{t.common.gross}</span>
                   </p>
                   {selectedCar.vat_deductible && (
-                    <p className="text-sm text-accent font-medium mt-1">MwSt. ausweisbar</p>
+                    <p className="text-sm text-accent font-medium mt-1">{t.vehicles.card.vatDeductible}</p>
                   )}
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {selectedCar.listing_number && (
                     <div>
-                      <p className="text-sm text-muted-foreground">Inserat-Nr.</p>
+                      <p className="text-sm text-muted-foreground">{t.vehicles.details.listingNumber}</p>
                       <p className="font-medium">{selectedCar.listing_number}</p>
                     </div>
                   )}
                   {selectedCar.vehicle_type && (
                     <div>
-                      <p className="text-sm text-muted-foreground">Fahrzeugtyp</p>
+                      <p className="text-sm text-muted-foreground">{t.vehicles.details.vehicleType}</p>
                       <p className="font-medium">{getVehicleTypeDisplay(selectedCar.vehicle_type)}</p>
                     </div>
                   )}
                   <div>
-                    <p className="text-sm text-muted-foreground">Erstzulassung</p>
+                    <p className="text-sm text-muted-foreground">{t.vehicles.details.firstRegistration}</p>
                     <p className="font-medium">
-                      {format(new Date(selectedCar.first_registration_date), "MMMM yyyy", { locale: de })}
+                      {format(new Date(selectedCar.first_registration_date), "MMMM yyyy", { locale: dateLocale })}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Kilometerstand</p>
+                    <p className="text-sm text-muted-foreground">{t.vehicles.details.mileage}</p>
                     <p className="font-medium">{formatMileage(selectedCar.mileage)}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Kraftstoff</p>
-                    <p className="font-medium">{selectedCar.fuel_type}</p>
+                    <p className="text-sm text-muted-foreground">{t.vehicles.details.fuel}</p>
+                    <p className="font-medium">{getFuelTypeDisplay(selectedCar.fuel_type)}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Getriebe</p>
-                    <p className="font-medium">{selectedCar.transmission}</p>
+                    <p className="text-sm text-muted-foreground">{t.vehicles.details.transmission}</p>
+                    <p className="font-medium">{getTransmissionDisplay(selectedCar.transmission)}</p>
                   </div>
                   {selectedCar.previous_owners !== null && (
                     <div>
-                      <p className="text-sm text-muted-foreground">Vorbesitzer</p>
+                      <p className="text-sm text-muted-foreground">{t.vehicles.details.previousOwners}</p>
                       <p className="font-medium">{selectedCar.previous_owners}</p>
                     </div>
                   )}
                   {selectedCar.color && (
                     <div>
-                      <p className="text-sm text-muted-foreground">Farbe</p>
+                      <p className="text-sm text-muted-foreground">{t.vehicles.details.color}</p>
                       <p className="font-medium">{selectedCar.color}</p>
                     </div>
                   )}
                   {selectedCar.power_hp && (
                     <div>
-                      <p className="text-sm text-muted-foreground">Leistung</p>
-                      <p className="font-medium">{selectedCar.power_hp} PS</p>
+                      <p className="text-sm text-muted-foreground">{t.vehicles.details.power}</p>
+                      <p className="font-medium">{selectedCar.power_hp} {language === "en" ? "HP" : "PS"}</p>
                     </div>
                   )}
                 </div>
 
-                {selectedCar.description && (
+                {getDescription(selectedCar) && (
                   <div>
-                    <h4 className="font-semibold mb-2">Beschreibung</h4>
-                    <p className="text-muted-foreground">{selectedCar.description}</p>
+                    <h4 className="font-semibold mb-2">{t.vehicles.details.description}</h4>
+                    <p className="text-muted-foreground">{getDescription(selectedCar)}</p>
                   </div>
                 )}
 
-                {selectedCar.features && selectedCar.features.length > 0 && (
+                {getFeatures(selectedCar) && getFeatures(selectedCar)!.length > 0 && (
                   <div>
-                    <h4 className="font-semibold mb-2">Ausstattung</h4>
+                    <h4 className="font-semibold mb-2">{t.vehicles.details.features}</h4>
                     <div className="flex flex-wrap gap-2">
-                      {selectedCar.features.map((feature, idx) => (
+                      {getFeatures(selectedCar)!.map((feature, idx) => (
                         <Badge key={idx} variant="secondary">
                           {feature}
                         </Badge>
@@ -435,10 +470,10 @@ const Fahrzeuge = () => {
                   className="w-full"
                   onClick={() => {
                     setSelectedCar(null);
-                    navigate(`/fahrzeuganfrage?car=${selectedCar.id}`);
+                    navigate(`${getRoute("vehicleInquiry")}?car=${selectedCar.id}`);
                   }}
                 >
-                  Anfrage senden
+                  {t.vehicles.details.inquire}
                 </Button>
               </div>
             </>
