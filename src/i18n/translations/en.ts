@@ -54,9 +54,9 @@ export const en = {
   // Home Page
   home: {
     hero: {
-      badge: "Instant Cash Payment",
+      badge: "Instant Payment",
       title: "We buy your car – fair, fast & hassle-free",
-      description: "ULTRIX is your reliable car purchasing station in Viernheim. Sell your vehicle without stress and receive cash immediately. All brands, all models – we make you a fair offer.",
+      description: "ULTRIX is your reliable car purchasing station in Viernheim. Sell your vehicle without stress and receive your money immediately. All brands, all models – we make you a fair offer.",
       sellButton: "Sell Your Car Now",
       adviceButton: "Get Free Advice",
     },
@@ -93,7 +93,7 @@ export const en = {
         description: "Choose a convenient time for the on-site vehicle inspection.",
       },
       step3: {
-        title: "Receive Cash",
+        title: "Receive Payment",
         description: "After a quick inspection, receive your money immediately – safe and simple.",
       },
       button: "Sell Your Vehicle Now",
