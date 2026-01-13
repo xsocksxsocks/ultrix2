@@ -35,8 +35,8 @@ const formatPrice = (price: number) => {
 const formatMileage = (mileage: number) =>
   `${mileage.toLocaleString("de-DE")} km`;
 
-// Convert image URL to base64
-const loadImageAsBase64 = (url: string): Promise<string | null> => {
+// Convert image URL to base64 and get dimensions
+const loadImageAsBase64 = (url: string): Promise<{ data: string; width: number; height: number } | null> => {
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = "anonymous";
@@ -49,7 +49,7 @@ const loadImageAsBase64 = (url: string): Promise<string | null> => {
         if (ctx) {
           ctx.drawImage(img, 0, 0);
           const dataUrl = canvas.toDataURL("image/png", 0.9);
-          resolve(dataUrl);
+          resolve({ data: dataUrl, width: img.width, height: img.height });
         } else {
           resolve(null);
         }
@@ -62,11 +62,14 @@ const loadImageAsBase64 = (url: string): Promise<string | null> => {
   });
 };
 
-const addHeader = (doc: jsPDF, pageWidth: number, margin: number, logoData: string | null) => {
-  // Logo
-  if (logoData) {
+const addHeader = (doc: jsPDF, pageWidth: number, margin: number, logoInfo: { data: string; width: number; height: number } | null) => {
+  // Logo with correct aspect ratio
+  if (logoInfo) {
     try {
-      doc.addImage(logoData, "PNG", margin, 8, 32, 14, undefined, "MEDIUM");
+      const targetHeight = 14;
+      const aspectRatio = logoInfo.width / logoInfo.height;
+      const targetWidth = targetHeight * aspectRatio;
+      doc.addImage(logoInfo.data, "PNG", margin, 8, targetWidth, targetHeight, undefined, "MEDIUM");
     } catch {
       doc.setFontSize(16);
       doc.setFont("helvetica", "bold");
@@ -124,11 +127,14 @@ const addFooter = (doc: jsPDF, pageWidth: number, pageHeight: number, pageNumber
   );
 };
 
-const addCoverPage = (doc: jsPDF, pageWidth: number, pageHeight: number, margin: number, logoData: string | null, carCount: number) => {
-  // Logo centered at top
-  if (logoData) {
+const addCoverPage = (doc: jsPDF, pageWidth: number, pageHeight: number, margin: number, logoInfo: { data: string; width: number; height: number } | null, carCount: number) => {
+  // Logo centered at top with correct aspect ratio
+  if (logoInfo) {
     try {
-      doc.addImage(logoData, "PNG", pageWidth / 2 - 30, 25, 60, 26, undefined, "MEDIUM");
+      const targetHeight = 28;
+      const aspectRatio = logoInfo.width / logoInfo.height;
+      const targetWidth = targetHeight * aspectRatio;
+      doc.addImage(logoInfo.data, "PNG", pageWidth / 2 - targetWidth / 2, 25, targetWidth, targetHeight, undefined, "MEDIUM");
     } catch {
       doc.setFontSize(28);
       doc.setFont("helvetica", "bold");
@@ -254,14 +260,14 @@ export const generateStockPdf = async (cars: Car[]) => {
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 14;
 
-  // Load logo
-  const logoData = await loadImageAsBase64(LOGO_URL);
+  // Load logo with dimensions
+  const logoInfo = await loadImageAsBase64(LOGO_URL);
 
   // Filter only available cars (not sold)
   const availableCars = cars.filter((car) => !car.is_sold);
 
   // Add cover page
-  addCoverPage(doc, pageWidth, pageHeight, margin, logoData, availableCars.length);
+  addCoverPage(doc, pageWidth, pageHeight, margin, logoInfo, availableCars.length);
 
   if (availableCars.length === 0) {
     const totalPages = doc.getNumberOfPages();
@@ -275,7 +281,7 @@ export const generateStockPdf = async (cars: Car[]) => {
 
   // Add new page for table
   doc.addPage();
-  addHeader(doc, pageWidth, margin, logoData);
+  addHeader(doc, pageWidth, margin, logoInfo);
 
   // Build table data - removed MwSt column
   const tableData = availableCars.map((car) => [
@@ -339,7 +345,7 @@ export const generateStockPdf = async (cars: Car[]) => {
     margin: { left: margin, right: margin },
     didDrawPage: (data) => {
       if (data.pageNumber > 1) {
-        addHeader(doc, pageWidth, margin, logoData);
+        addHeader(doc, pageWidth, margin, logoInfo);
       }
     },
     didParseCell: (data) => {
