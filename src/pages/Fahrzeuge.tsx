@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/layout/Layout";
 interface CarForSale {
   id: string;
+  listing_number: string | null;
   vehicle_type: string | null;
   brand: string;
   model: string;
@@ -234,6 +235,9 @@ const Fahrzeuge = () => {
                   </div>
                   <CardContent className="p-6">
                     <div className="flex items-center gap-2 mb-1">
+                      {car.listing_number && (
+                        <Badge variant="secondary" className="text-xs font-mono">#{car.listing_number}</Badge>
+                      )}
                       {car.vehicle_type && car.vehicle_type !== "Pkw" && car.vehicle_type !== "Fahrzeug" && (
                         <Badge variant="outline" className="text-xs">{getVehicleTypeDisplay(car.vehicle_type)}</Badge>
                       )}
@@ -313,6 +317,11 @@ const Fahrzeuge = () => {
           {selectedCar && (
             <>
               <DialogHeader>
+                <div className="flex items-center gap-2 mb-1">
+                  {selectedCar.listing_number && (
+                    <Badge variant="secondary" className="text-sm font-mono">Inserats-Nr. #{selectedCar.listing_number}</Badge>
+                  )}
+                </div>
                 <DialogTitle className="font-heading text-2xl">
                   {selectedCar.brand} {selectedCar.model}
                 </DialogTitle>
