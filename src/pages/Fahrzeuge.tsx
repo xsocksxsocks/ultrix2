@@ -3,7 +3,22 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { Car, Fuel, Calendar, Gauge, Settings2, ShieldCheck, CheckCircle, Award, FileCheck, Handshake, Users, MousePointerClick, Bike, Truck } from "lucide-react";
+import {
+  Car,
+  Fuel,
+  Calendar,
+  Gauge,
+  Settings2,
+  ShieldCheck,
+  CheckCircle,
+  Award,
+  FileCheck,
+  Handshake,
+  Users,
+  MousePointerClick,
+  Bike,
+  Truck,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -67,7 +82,7 @@ const Fahrzeuge = () => {
     return new Intl.NumberFormat("de-DE").format(mileage) + " km";
   };
 
-  const filteredCars = cars?.filter(car => {
+  const filteredCars = cars?.filter((car) => {
     if (vehicleTypeFilter === "all") return true;
     if (vehicleTypeFilter === "Fahrzeug") {
       return car.vehicle_type === "Fahrzeug" || car.vehicle_type === "Pkw" || !car.vehicle_type;
@@ -91,8 +106,8 @@ const Fahrzeuge = () => {
         <div className="section-container">
           <h1 className="font-heading text-4xl md:text-5xl font-bold mb-4">Unsere Fahrzeuge</h1>
           <p className="text-primary-foreground/90 text-lg max-w-2xl">
-            Entdecken Sie unsere Auswahl an geprüften Gebrauchtwagen. 
-            Alle Fahrzeuge werden sorgfältig geprüft und zu fairen Preisen angeboten.
+            Entdecken Sie unsere Auswahl an geprüften Gebrauchtwagen. Alle Fahrzeuge werden sorgfältig geprüft und zu
+            fairen Preisen angeboten.
           </p>
         </div>
       </section>
@@ -107,9 +122,9 @@ const Fahrzeuge = () => {
             <div>
               <h3 className="font-heading text-lg font-semibold mb-2">Fahrzeugvermittlung mit Garantie</h3>
               <p className="text-muted-foreground">
-                Wir vermitteln Fahrzeuge im Kundenauftrag. Jedes Fahrzeug durchläuft vor dem Verkauf 
-                unsere umfassende technische Prüfung. Den Fahrzeugzustand garantieren wir Ihnen 
-                vertraglich – ohne versteckte Kosten oder zusätzliche Gebühren für Sie als Käufer.
+                Wir vermitteln Fahrzeuge im Kundenauftrag. Jedes Fahrzeug durchläuft vor dem Verkauf unsere umfassende
+                technische Prüfung. Den Fahrzeugzustand garantieren wir Ihnen vertraglich – ohne versteckte Kosten oder
+                zusätzliche Gebühren für Sie als Käufer.
               </p>
             </div>
           </div>
@@ -135,7 +150,7 @@ const Fahrzeuge = () => {
                 <Handshake className="h-6 w-6 text-accent" />
               </div>
               <p className="font-semibold text-sm">Keine Zusatzkosten</p>
-              <p className="text-xs text-muted-foreground mt-1">Faire Preise</p>
+              <p className="text-xs text-muted-foreground mt-1">Lieferung deutschlandweit inkl.</p>
             </div>
             <div className="bg-card p-4 rounded-lg border border-border text-center">
               <div className="bg-accent/10 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -152,31 +167,31 @@ const Fahrzeuge = () => {
         <div className="section-container">
           {/* Vehicle Type Filter */}
           <div className="flex flex-wrap gap-3 mb-8">
-            <Button 
-              variant={vehicleTypeFilter === "all" ? "default" : "outline"} 
+            <Button
+              variant={vehicleTypeFilter === "all" ? "default" : "outline"}
               onClick={() => setVehicleTypeFilter("all")}
               className="flex items-center gap-2"
             >
               Alle
             </Button>
-            <Button 
-              variant={vehicleTypeFilter === "Fahrzeug" ? "default" : "outline"} 
+            <Button
+              variant={vehicleTypeFilter === "Fahrzeug" ? "default" : "outline"}
               onClick={() => setVehicleTypeFilter("Fahrzeug")}
               className="flex items-center gap-2"
             >
               <Car className="h-4 w-4" />
               Fahrzeug
             </Button>
-            <Button 
-              variant={vehicleTypeFilter === "Motorrad" ? "default" : "outline"} 
+            <Button
+              variant={vehicleTypeFilter === "Motorrad" ? "default" : "outline"}
               onClick={() => setVehicleTypeFilter("Motorrad")}
               className="flex items-center gap-2"
             >
               <Bike className="h-4 w-4" />
               Motorrad
             </Button>
-            <Button 
-              variant={vehicleTypeFilter === "Baumaschinen" ? "default" : "outline"} 
+            <Button
+              variant={vehicleTypeFilter === "Baumaschinen" ? "default" : "outline"}
               onClick={() => setVehicleTypeFilter("Baumaschinen")}
               className="flex items-center gap-2"
             >
@@ -200,9 +215,9 @@ const Fahrzeuge = () => {
           ) : filteredCars && filteredCars.length > 0 ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredCars.map((car) => (
-                <Card 
+                <Card
                   key={car.id}
-                  className={`card-hover overflow-hidden border-border transition-all ${car.is_sold ? "opacity-60 grayscale" : car.is_reserved ? "opacity-80" : "cursor-pointer hover:border-primary hover:shadow-lg"}`} 
+                  className={`card-hover overflow-hidden border-border transition-all ${car.is_sold ? "opacity-60 grayscale" : car.is_reserved ? "opacity-80" : "cursor-pointer hover:border-primary hover:shadow-lg"}`}
                   onClick={() => !car.is_sold && !car.is_reserved && setSelectedCar(car)}
                 >
                   <div className="relative aspect-[16/10] bg-muted">
@@ -218,9 +233,7 @@ const Fahrzeuge = () => {
                       </div>
                     )}
                     {car.is_featured && !car.is_sold && !car.is_reserved && (
-                      <Badge className="absolute top-3 left-3 bg-accent text-accent-foreground">
-                        Empfohlen
-                      </Badge>
+                      <Badge className="absolute top-3 left-3 bg-accent text-accent-foreground">Empfohlen</Badge>
                     )}
                     {car.is_sold && (
                       <Badge className="absolute top-3 left-3 bg-destructive text-destructive-foreground">
@@ -228,15 +241,15 @@ const Fahrzeuge = () => {
                       </Badge>
                     )}
                     {car.is_reserved && !car.is_sold && (
-                      <Badge className="absolute top-3 left-3 bg-amber-500 text-white">
-                        Reserviert
-                      </Badge>
+                      <Badge className="absolute top-3 left-3 bg-amber-500 text-white">Reserviert</Badge>
                     )}
                   </div>
                   <CardContent className="p-6">
                     <div className="flex items-center gap-2 mb-1">
                       {car.vehicle_type && car.vehicle_type !== "Pkw" && car.vehicle_type !== "Fahrzeug" && (
-                        <Badge variant="outline" className="text-xs">{getVehicleTypeDisplay(car.vehicle_type)}</Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {getVehicleTypeDisplay(car.vehicle_type)}
+                        </Badge>
                       )}
                     </div>
                     <h3 className="font-heading text-xl font-semibold mb-1">
@@ -246,11 +259,9 @@ const Fahrzeuge = () => {
                       <p className="text-2xl font-bold text-primary">
                         {formatPrice(car.price)} <span className="text-base font-normal">brutto</span>
                       </p>
-                      {car.vat_deductible && (
-                        <p className="text-sm text-accent font-medium">MwSt. ausweisbar</p>
-                      )}
+                      {car.vat_deductible && <p className="text-sm text-accent font-medium">MwSt. ausweisbar</p>}
                     </div>
-                    
+
                     <div className="grid grid-cols-2 gap-3 text-sm text-muted-foreground">
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4" />
@@ -296,10 +307,12 @@ const Fahrzeuge = () => {
             <div className="text-center py-16">
               <Car className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
               <h2 className="font-heading text-2xl font-semibold mb-2">
-                {vehicleTypeFilter !== "all" ? `Keine ${vehicleTypeFilter === "Fahrzeug" ? "Fahrzeuge" : vehicleTypeFilter === "Motorrad" ? "Motorräder" : "Baumaschinen"} verfügbar` : "Keine Fahrzeuge verfügbar"}
+                {vehicleTypeFilter !== "all"
+                  ? `Keine ${vehicleTypeFilter === "Fahrzeug" ? "Fahrzeuge" : vehicleTypeFilter === "Motorrad" ? "Motorräder" : "Baumaschinen"} verfügbar`
+                  : "Keine Fahrzeuge verfügbar"}
               </h2>
               <p className="text-muted-foreground">
-                {vehicleTypeFilter !== "all" 
+                {vehicleTypeFilter !== "all"
                   ? "Versuchen Sie einen anderen Filter oder schauen Sie bald wieder vorbei!"
                   : "Aktuell sind keine Fahrzeuge im Angebot. Schauen Sie bald wieder vorbei!"}
               </p>
@@ -323,7 +336,7 @@ const Fahrzeuge = () => {
                   {selectedCar.brand} {selectedCar.model}
                 </DialogTitle>
               </DialogHeader>
-              
+
               {selectedCar.images && selectedCar.images.length > 0 && (
                 <div className="grid grid-cols-2 gap-2 mb-6">
                   {selectedCar.images.map((img, idx) => (
@@ -336,7 +349,7 @@ const Fahrzeuge = () => {
                   ))}
                 </div>
               )}
-              
+
               <div className="space-y-6">
                 <div>
                   <p className="text-3xl font-bold text-primary">
@@ -346,7 +359,7 @@ const Fahrzeuge = () => {
                     <p className="text-sm text-accent font-medium mt-1">MwSt. ausweisbar</p>
                   )}
                 </div>
-                
+
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {selectedCar.listing_number && (
                     <div>
@@ -362,7 +375,9 @@ const Fahrzeuge = () => {
                   )}
                   <div>
                     <p className="text-sm text-muted-foreground">Erstzulassung</p>
-                    <p className="font-medium">{format(new Date(selectedCar.first_registration_date), "MMMM yyyy", { locale: de })}</p>
+                    <p className="font-medium">
+                      {format(new Date(selectedCar.first_registration_date), "MMMM yyyy", { locale: de })}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Kilometerstand</p>
@@ -408,14 +423,16 @@ const Fahrzeuge = () => {
                     <h4 className="font-semibold mb-2">Ausstattung</h4>
                     <div className="flex flex-wrap gap-2">
                       {selectedCar.features.map((feature, idx) => (
-                        <Badge key={idx} variant="secondary">{feature}</Badge>
+                        <Badge key={idx} variant="secondary">
+                          {feature}
+                        </Badge>
                       ))}
                     </div>
                   </div>
                 )}
 
-                <Button 
-                  className="w-full" 
+                <Button
+                  className="w-full"
                   onClick={() => {
                     setSelectedCar(null);
                     navigate(`/fahrzeuganfrage?car=${selectedCar.id}`);
