@@ -1011,7 +1011,7 @@ const Admin = () => {
                           <p className="text-lg font-bold text-primary">{formatPrice(car.price)}</p>
                           <p className="text-sm text-muted-foreground">
                             EZ {format(new Date(car.first_registration_date), "MM/yyyy")} • {car.mileage.toLocaleString("de-DE")} km
-                            {car.listing_number && <> • <span className="font-mono">Inserat-Nr. {car.listing_number}</span></>}
+                            {car.listing_number && <> • Inserat-Nr. {car.listing_number}</>}
                           </p>
                           <div className="flex flex-wrap gap-2 mt-4">
                             <Button size="sm" variant="outline" onClick={() => openEditDialog(car)}>
