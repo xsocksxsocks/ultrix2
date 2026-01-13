@@ -342,11 +342,10 @@ export const generateStockPdf = async (cars: Car[]) => {
       8: { halign: "center" },
     },
     tableWidth: pageWidth - margin * 2,
-    margin: { left: margin, right: margin },
+    margin: { left: margin, right: margin, top: 32 },
     didDrawPage: (data) => {
-      if (data.pageNumber > 1) {
-        addHeader(doc, pageWidth, margin, logoInfo);
-      }
+      // Add header on all pages (including first table page)
+      addHeader(doc, pageWidth, margin, logoInfo);
     },
     didParseCell: (data) => {
       // Style status column
