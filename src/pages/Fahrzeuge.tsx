@@ -44,6 +44,7 @@ const Fahrzeuge = () => {
       const { data, error } = await supabase
         .from("cars_for_sale")
         .select("*")
+        .is("deleted_at", null)
         .order("is_sold", { ascending: true })
         .order("is_featured", { ascending: false })
         .order("created_at", { ascending: false });
