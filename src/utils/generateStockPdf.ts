@@ -390,7 +390,7 @@ export const generateTestStockPdf = async () => {
   const fuelTypes = ["Benzin", "Diesel", "Elektro", "Hybrid"];
   const transmissions = ["Automatik", "Schaltgetriebe"];
 
-  const testCars: Car[] = Array.from({ length: 30 }, (_, i) => {
+  const testCars: Car[] = Array.from({ length: 70 }, (_, i) => {
     const brand = brands[i % brands.length];
     const modelOptions = models[brand];
     const model = modelOptions[Math.floor(Math.random() * modelOptions.length)];

@@ -985,13 +985,13 @@ const [newCarData, setNewCarData] = useState({
                     variant="outline"
                     size="sm"
                     onClick={async () => {
-                      toast({ title: "Test-PDF wird erstellt...", description: "30 simulierte Autos werden generiert.", duration: 2000 });
+                      toast({ title: "Test-PDF wird erstellt...", description: "70 simulierte Autos werden generiert.", duration: 2000 });
                       await generateTestStockPdf();
                       toast({ title: "Test-PDF erstellt", description: "Der Download wurde gestartet.", duration: 3000 });
                     }}
                   >
                     <Download className="h-4 w-4 mr-2" />
-                    Test PDF (30 Autos)
+                    Test PDF (70 Autos)
                   </Button>
                   <Button 
                     variant="outline" 
