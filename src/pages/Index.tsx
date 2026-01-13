@@ -3,7 +3,7 @@ import { Car, HandCoins, CheckCircle, Euro, Clock, Shield, Phone, ArrowRight, St
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Layout from "@/components/layout/Layout";
-import heroImage from "@/assets/hero-dealership.jpg";
+import heroImage from "@/assets/hero-cars.jpg";
 
 const Index = () => {
   const benefits = [
