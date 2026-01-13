@@ -173,6 +173,39 @@ export const en = {
     },
   },
 
+  // Vehicle Inquiry Page
+  inquiry: {
+    title: "Vehicle Inquiry",
+    subtitle: "Send us your inquiry for the selected vehicle.",
+    backToVehicles: "Back to vehicles",
+    notFound: {
+      title: "Vehicle not found",
+      text: "The requested vehicle no longer exists.",
+      button: "Back to vehicles",
+    },
+    form: {
+      title: "Your Contact Details",
+      name: "Name",
+      namePlaceholder: "Your full name",
+      email: "Email",
+      emailPlaceholder: "your@email.com",
+      phone: "Phone",
+      phonePlaceholder: "+49 123 456789",
+      message: "Message (optional)",
+      messagePlaceholder: "Do you have any questions about the vehicle?",
+      submit: "Send Inquiry",
+      submitting: "Sending...",
+    },
+    success: {
+      title: "Inquiry sent!",
+      message: "We will get back to you as soon as possible.",
+    },
+    error: {
+      requiredFields: "Please fill in all required fields",
+      sendFailed: "Error sending",
+    },
+  },
+
   // Sell Page
   sell: {
     title: "Sell Your Car",
