@@ -371,3 +371,47 @@ export const generateStockPdf = async (cars: Car[]) => {
   const fileName = `ULTRIX_Fahrzeugbestand_${format(new Date(), "yyyy-MM-dd")}.pdf`;
   doc.save(fileName);
 };
+
+// Test function to generate PDF with 30 simulated cars
+export const generateTestStockPdf = async () => {
+  const brands = ["BMW", "Mercedes-Benz", "Audi", "Volkswagen", "Opel", "Ford", "Toyota", "Honda", "Porsche", "Skoda"];
+  const models: Record<string, string[]> = {
+    "BMW": ["320d", "520i", "X3", "X5", "M3"],
+    "Mercedes-Benz": ["C 200", "E 300", "GLC 220", "A 180", "S 500"],
+    "Audi": ["A4", "A6", "Q5", "Q7", "RS6"],
+    "Volkswagen": ["Golf", "Passat", "Tiguan", "Polo", "T-Roc"],
+    "Opel": ["Corsa", "Astra", "Insignia", "Mokka", "Grandland"],
+    "Ford": ["Focus", "Fiesta", "Kuga", "Puma", "Mustang"],
+    "Toyota": ["Corolla", "Yaris", "RAV4", "C-HR", "Camry"],
+    "Honda": ["Civic", "CR-V", "Jazz", "HR-V", "Accord"],
+    "Porsche": ["911", "Cayenne", "Macan", "Panamera", "Taycan"],
+    "Skoda": ["Octavia", "Superb", "Kodiaq", "Karoq", "Fabia"],
+  };
+  const fuelTypes = ["Benzin", "Diesel", "Elektro", "Hybrid"];
+  const transmissions = ["Automatik", "Schaltgetriebe"];
+
+  const testCars: Car[] = Array.from({ length: 30 }, (_, i) => {
+    const brand = brands[i % brands.length];
+    const modelOptions = models[brand];
+    const model = modelOptions[Math.floor(Math.random() * modelOptions.length)];
+    const year = 2018 + Math.floor(Math.random() * 6);
+    const month = Math.floor(Math.random() * 12) + 1;
+    
+    return {
+      id: `test-${i}`,
+      brand,
+      model,
+      price: 15000 + Math.floor(Math.random() * 50000),
+      mileage: 10000 + Math.floor(Math.random() * 150000),
+      fuel_type: fuelTypes[Math.floor(Math.random() * fuelTypes.length)],
+      transmission: transmissions[Math.floor(Math.random() * transmissions.length)],
+      first_registration_date: `${year}-${month.toString().padStart(2, "0")}-01`,
+      previous_owners: Math.floor(Math.random() * 4),
+      power_hp: 100 + Math.floor(Math.random() * 300),
+      is_sold: false,
+      is_reserved: i % 7 === 0, // Every 7th car is reserved
+    };
+  });
+
+  await generateStockPdf(testCars);
+};
