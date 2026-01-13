@@ -3,60 +3,46 @@ import { Car, HandCoins, CheckCircle, Euro, Clock, Shield, Phone, ArrowRight, St
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Layout from "@/components/layout/Layout";
+import { useLanguage, useLocalizedRoute } from "@/i18n/LanguageContext";
 import heroImage from "@/assets/hero-cars.jpg";
 
 const Index = () => {
+  const { t } = useLanguage();
+  const getRoute = useLocalizedRoute();
+
   const benefits = [
     {
       icon: Euro,
-      title: "Faire Preise",
-      description: "Wir bieten Ihnen einen marktgerechten, transparenten Preis für Ihr Fahrzeug.",
+      title: t.home.benefits.fairPrices.title,
+      description: t.home.benefits.fairPrices.description,
     },
     {
       icon: Clock,
-      title: "Schnelle Abwicklung",
-      description: "Vom Termin bis zur Auszahlung – in der Regel innerhalb von 24 Stunden.",
+      title: t.home.benefits.fast.title,
+      description: t.home.benefits.fast.description,
     },
     {
       icon: Shield,
-      title: "Seriös & Sicher",
-      description: "Über 10 Jahre Erfahrung im Fahrzeugankauf. Sichere Bezahlung garantiert.",
+      title: t.home.benefits.secure.title,
+      description: t.home.benefits.secure.description,
     },
   ];
 
   const process = [
     {
       step: "1",
-      title: "Fahrzeugdaten eingeben",
-      description: "Füllen Sie unser einfaches Formular mit den Daten Ihres Fahrzeugs aus.",
+      title: t.home.process.step1.title,
+      description: t.home.process.step1.description,
     },
     {
       step: "2",
-      title: "Termin vereinbaren",
-      description: "Wählen Sie einen passenden Termin für die Fahrzeugbegutachtung vor Ort.",
+      title: t.home.process.step2.title,
+      description: t.home.process.step2.description,
     },
     {
       step: "3",
-      title: "Bargeld erhalten",
-      description: "Nach kurzer Prüfung erhalten Sie sofort Ihr Geld – sicher und unkompliziert.",
-    },
-  ];
-
-  const testimonials = [
-    {
-      text: "Sehr professionelle Abwicklung. Fairer Preis und das Geld war sofort da!",
-      author: "Michael S.",
-      location: "Viernheim",
-    },
-    {
-      text: "Endlich ein seriöser Ankäufer. Kann ich nur weiterempfehlen.",
-      author: "Sandra K.",
-      location: "Mannheim",
-    },
-    {
-      text: "Schnell, fair und unkompliziert. Genau so soll es sein.",
-      author: "Thomas M.",
-      location: "Weinheim",
+      title: t.home.process.step3.title,
+      description: t.home.process.step3.description,
     },
   ];
 
@@ -79,27 +65,25 @@ const Index = () => {
           <div className="max-w-3xl text-primary-foreground">
             <div className="inline-flex items-center gap-2 bg-accent/20 border border-accent/30 px-4 py-2 rounded-full mb-6 backdrop-blur-sm">
               <Euro className="h-5 w-5 text-accent" />
-              <span className="text-accent font-medium">Sofortige Barauszahlung</span>
+              <span className="text-accent font-medium">{t.home.hero.badge}</span>
             </div>
             <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-              Wir kaufen Ihr Auto – fair, schnell & unkompliziert
+              {t.home.hero.title}
             </h1>
             <p className="text-lg md:text-xl text-primary-foreground/90 mb-8 leading-relaxed">
-              ULTRIX ist Ihre zuverlässige Ankaufstation in Viernheim. 
-              Verkaufen Sie Ihr Fahrzeug ohne Stress und erhalten Sie sofort Bargeld. 
-              Alle Marken, alle Modelle – wir machen Ihnen ein faires Angebot.
+              {t.home.hero.description}
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-lg px-8">
-                <Link to="/verkaufen">
+                <Link to={getRoute("sell")}>
                   <HandCoins className="h-5 w-5 mr-2" />
-                  Jetzt Auto verkaufen
+                  {t.home.hero.sellButton}
                 </Link>
               </Button>
               <Button asChild size="lg" className="bg-primary-foreground/20 text-primary-foreground border-2 border-primary-foreground/50 hover:bg-primary-foreground hover:text-primary font-semibold backdrop-blur-sm">
-                <Link to="/kontakt">
+                <Link to={getRoute("contact")}>
                   <Phone className="h-5 w-5 mr-2" />
-                  Kostenlos beraten lassen
+                  {t.home.hero.adviceButton}
                 </Link>
               </Button>
             </div>
@@ -113,15 +97,15 @@ const Index = () => {
           <div className="flex flex-wrap justify-center gap-8 md:gap-16 text-center">
             <div className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-accent" />
-              <span className="font-medium">Über 1.000 angekaufte Fahrzeuge</span>
+              <span className="font-medium">{t.home.trust.vehicles}</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-accent" />
-              <span className="font-medium">Sichere Sofortauszahlung</span>
+              <span className="font-medium">{t.home.trust.payment}</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-accent" />
-              <span className="font-medium">Alle Marken & Modelle</span>
+              <span className="font-medium">{t.home.trust.brands}</span>
             </div>
           </div>
         </div>
@@ -132,10 +116,10 @@ const Index = () => {
         <div className="section-container">
           <div className="text-center mb-12">
             <h2 className="font-heading text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Warum Ihr Auto bei ULTRIX verkaufen?
+              {t.home.benefits.title}
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Wir machen den Autoverkauf so einfach wie möglich – ohne versteckte Kosten oder Überraschungen.
+              {t.home.benefits.subtitle}
             </p>
           </div>
 
@@ -160,10 +144,10 @@ const Index = () => {
         <div className="section-container">
           <div className="text-center mb-12">
             <h2 className="font-heading text-3xl md:text-4xl font-bold text-foreground mb-4">
-              So einfach verkaufen Sie Ihr Auto
+              {t.home.process.title}
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              In nur 3 Schritten zum Verkauf – schneller und einfacher geht es nicht.
+              {t.home.process.subtitle}
             </p>
           </div>
 
@@ -186,9 +170,9 @@ const Index = () => {
 
           <div className="text-center mt-12">
             <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold">
-              <Link to="/verkaufen">
+              <Link to={getRoute("sell")}>
                 <HandCoins className="h-5 w-5 mr-2" />
-                Jetzt Fahrzeug verkaufen
+                {t.home.process.button}
               </Link>
             </Button>
           </div>
@@ -200,12 +184,12 @@ const Index = () => {
         <div className="section-container">
           <div className="text-center mb-12">
             <h2 className="font-heading text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Das sagen unsere Kunden
+              {t.home.testimonials.title}
             </h2>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
+            {t.home.testimonials.items.map((testimonial, index) => (
               <Card key={index} className="border-border">
                 <CardContent className="p-6">
                   <div className="flex gap-1 mb-4">
@@ -231,33 +215,32 @@ const Index = () => {
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div>
               <h2 className="font-heading text-2xl md:text-3xl font-bold text-foreground mb-4">
-                Fahrzeuge zu verkaufen?
+                {t.home.secondary.title}
               </h2>
               <p className="text-muted-foreground mb-6">
-                Neben unserem Ankauf vermitteln wir auch ausgewählte Gebrauchtfahrzeuge. 
-                Schauen Sie sich unsere aktuellen Angebote an.
+                {t.home.secondary.description}
               </p>
               <Button asChild variant="outline">
-                <Link to="/fahrzeuge">
+                <Link to={getRoute("vehicles")}>
                   <Car className="h-4 w-4 mr-2" />
-                  Verfügbare Fahrzeuge ansehen
+                  {t.home.secondary.button}
                 </Link>
               </Button>
             </div>
             <div className="bg-card p-6 rounded-lg border border-border">
-              <h3 className="font-heading text-lg font-semibold mb-4">Auch für Geschäftskunden</h3>
+              <h3 className="font-heading text-lg font-semibold mb-4">{t.home.secondary.businessTitle}</h3>
               <ul className="space-y-3">
                 <li className="flex items-center gap-3">
                   <CheckCircle className="h-5 w-5 text-accent flex-shrink-0" />
-                  <span>Flottenankauf für Unternehmen</span>
+                  <span>{t.home.secondary.fleet}</span>
                 </li>
                 <li className="flex items-center gap-3">
                   <CheckCircle className="h-5 w-5 text-accent flex-shrink-0" />
-                  <span>Leasingrückläufer-Ankauf</span>
+                  <span>{t.home.secondary.leasing}</span>
                 </li>
                 <li className="flex items-center gap-3">
                   <CheckCircle className="h-5 w-5 text-accent flex-shrink-0" />
-                  <span>Diskrete Abwicklung</span>
+                  <span>{t.home.secondary.discreet}</span>
                 </li>
               </ul>
             </div>
@@ -269,17 +252,17 @@ const Index = () => {
       <section className="py-16 md:py-24 gradient-navy text-primary-foreground">
         <div className="section-container text-center">
           <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
-            Bereit, Ihr Auto zu verkaufen?
+            {t.home.cta.title}
           </h2>
           <p className="text-primary-foreground/90 mb-8 max-w-xl mx-auto text-lg">
-            Vereinbaren Sie jetzt einen Termin und erhalten Sie ein unverbindliches Angebot für Ihr Fahrzeug.
+            {t.home.cta.description}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold">
-              <Link to="/verkaufen">Termin vereinbaren</Link>
+              <Link to={getRoute("sell")}>{t.home.cta.button}</Link>
             </Button>
             <Button asChild size="lg" className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-semibold">
-              <a href="tel:+4962046129035">
+              <a href={`tel:${t.common.phone.replace(/\s/g, "")}`}>
                 <Phone className="h-5 w-5 mr-2" />
                 06204 / 6129035
               </a>

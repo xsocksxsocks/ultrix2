@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { LanguageProvider } from "@/i18n/LanguageContext";
 import ScrollToTop from "./components/ScrollToTop";
 import CookieBanner from "./components/CookieBanner";
 import Index from "./pages/Index";
@@ -24,20 +25,35 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <ScrollToTop />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/fahrzeuge" element={<Fahrzeuge />} />
-          <Route path="/fahrzeuganfrage" element={<Fahrzeuganfrage />} />
-          <Route path="/verkaufen" element={<Verkaufen />} />
-          <Route path="/kontakt" element={<Kontakt />} />
-          <Route path="/impressum" element={<Impressum />} />
-          <Route path="/datenschutz" element={<Datenschutz />} />
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        <CookieBanner />
+        <LanguageProvider>
+          <ScrollToTop />
+          <Routes>
+            {/* German routes (default) */}
+            <Route path="/" element={<Index />} />
+            <Route path="/fahrzeuge" element={<Fahrzeuge />} />
+            <Route path="/fahrzeuganfrage" element={<Fahrzeuganfrage />} />
+            <Route path="/verkaufen" element={<Verkaufen />} />
+            <Route path="/kontakt" element={<Kontakt />} />
+            <Route path="/impressum" element={<Impressum />} />
+            <Route path="/datenschutz" element={<Datenschutz />} />
+            
+            {/* English routes */}
+            <Route path="/en" element={<Index />} />
+            <Route path="/en/vehicles" element={<Fahrzeuge />} />
+            <Route path="/en/vehicle-inquiry" element={<Fahrzeuganfrage />} />
+            <Route path="/en/sell" element={<Verkaufen />} />
+            <Route path="/en/contact" element={<Kontakt />} />
+            <Route path="/en/imprint" element={<Impressum />} />
+            <Route path="/en/privacy" element={<Datenschutz />} />
+            
+            {/* Admin routes */}
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin" element={<Admin />} />
+            
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <CookieBanner />
+        </LanguageProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
