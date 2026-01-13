@@ -155,8 +155,8 @@ const addCoverPage = (doc: jsPDF, pageWidth: number, pageHeight: number, margin:
   doc.setTextColor(100, 100, 100);
   doc.text(`Stand: ${format(new Date(), "dd.MM.yyyy")} • ${carCount} Fahrzeuge verfügbar`, pageWidth / 2, 80, { align: "center" });
 
-  // Decorative line - light blue
-  doc.setDrawColor(53, 197, 255);
+  // Decorative line - blue
+  doc.setDrawColor(7, 122, 203);
   doc.setLineWidth(1);
   doc.line(pageWidth / 2 - 40, 88, pageWidth / 2 + 40, 88);
 
