@@ -20,6 +20,7 @@ interface Car {
   images?: string[];
   description?: string | null;
   features?: string[] | null;
+  vehicle_type?: string | null;
 }
 
 const LOGO_URL = "/images/ultrix-logo.png";
@@ -279,12 +280,19 @@ export const generateStockPdf = async (cars: Car[]) => {
     return;
   }
 
-  // Add new page for table
-  doc.addPage();
-  addHeader(doc, pageWidth, margin, logoInfo);
+  // Group vehicles by category
+  const vehicles = availableCars.filter((car) => 
+    !car.vehicle_type || car.vehicle_type === "Fahrzeug" || car.vehicle_type === "Pkw"
+  );
+  const construction = availableCars.filter((car) => 
+    car.vehicle_type === "Baumaschinen" || car.vehicle_type === "Baumaschine"
+  );
+  const motorcycles = availableCars.filter((car) => 
+    car.vehicle_type === "Motorrad"
+  );
 
-  // Build table data
-  const tableData = availableCars.map((car) => [
+  // Helper function to build table data
+  const buildTableData = (carList: Car[]) => carList.map((car) => [
     `${car.brand} ${car.model}`,
     format(new Date(car.first_registration_date), "MM/yyyy"),
     formatMileage(car.mileage),
@@ -296,59 +304,44 @@ export const generateStockPdf = async (cars: Car[]) => {
     car.vat_deductible ? "Ja" : "Nein",
   ]);
 
-  // Create table with neutral colors
-  autoTable(doc, {
-    startY: 32,
-    head: [[
-      "Fahrzeug",
-      "EZ",
-      "Kilometer",
-      "Leistung",
-      "Kraftstoff",
-      "Getriebe",
-      "VB",
-      "Preis",
-      "MwSt.",
-    ]],
-    body: tableData,
-    theme: "grid",
+  // Table configuration
+  const tableConfig = {
+    theme: "grid" as const,
     headStyles: {
-      fillColor: [55, 65, 81],
-      textColor: [255, 255, 255],
+      fillColor: [55, 65, 81] as [number, number, number],
+      textColor: [255, 255, 255] as [number, number, number],
       fontSize: 8,
-      fontStyle: "bold",
-      halign: "center",
-      valign: "middle",
+      fontStyle: "bold" as const,
+      halign: "center" as const,
+      valign: "middle" as const,
       cellPadding: 3,
     },
     bodyStyles: {
       fontSize: 8,
-      textColor: [50, 50, 50],
+      textColor: [50, 50, 50] as [number, number, number],
       cellPadding: 2.5,
-      valign: "middle",
+      valign: "middle" as const,
     },
     alternateRowStyles: {
-      fillColor: [248, 250, 252],
+      fillColor: [248, 250, 252] as [number, number, number],
     },
     columnStyles: {
-      0: { fontStyle: "bold" },
-      1: { halign: "center" },
-      2: { halign: "right" },
-      3: { halign: "center" },
-      4: { halign: "center" },
-      5: { halign: "center" },
-      6: { halign: "center" },
-      7: { halign: "right", fontStyle: "bold" },
-      8: { halign: "center" },
+      0: { fontStyle: "bold" as const },
+      1: { halign: "center" as const },
+      2: { halign: "right" as const },
+      3: { halign: "center" as const },
+      4: { halign: "center" as const },
+      5: { halign: "center" as const },
+      6: { halign: "center" as const },
+      7: { halign: "right" as const, fontStyle: "bold" as const },
+      8: { halign: "center" as const },
     },
     tableWidth: pageWidth - margin * 2,
     margin: { left: margin, right: margin, top: 32, bottom: 25 },
-    didDrawPage: (data) => {
-      // Add header on all pages (including first table page)
+    didDrawPage: () => {
       addHeader(doc, pageWidth, margin, logoInfo);
     },
-    didParseCell: (data) => {
-      // Style MwSt column
+    didParseCell: (data: any) => {
       if (data.section === "body" && data.column.index === 8) {
         if (data.cell.raw === "Ja") {
           data.cell.styles.textColor = [22, 163, 74];
@@ -358,7 +351,73 @@ export const generateStockPdf = async (cars: Car[]) => {
         }
       }
     },
-  });
+  };
+
+  const tableHead = [[
+    "Fahrzeug",
+    "EZ",
+    "Kilometer",
+    "Leistung",
+    "Kraftstoff",
+    "Getriebe",
+    "VB",
+    "Preis",
+    "MwSt.",
+  ]];
+
+  // Helper to add category section
+  const addCategorySection = (title: string, carList: Car[], startY: number) => {
+    // Category title
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(7, 122, 203);
+    doc.text(title, margin, startY);
+
+    // Table
+    autoTable(doc, {
+      ...tableConfig,
+      startY: startY + 4,
+      head: tableHead,
+      body: buildTableData(carList),
+    });
+
+    return (doc as any).lastAutoTable?.finalY || startY + 20;
+  };
+
+  // Add new page for tables
+  doc.addPage();
+  addHeader(doc, pageWidth, margin, logoInfo);
+
+  let currentY = 36;
+
+  // Add vehicles section
+  if (vehicles.length > 0) {
+    currentY = addCategorySection(`Fahrzeuge (${vehicles.length})`, vehicles, currentY);
+    currentY += 10;
+  }
+
+  // Add construction equipment section
+  if (construction.length > 0) {
+    // Check if we need a new page
+    if (currentY > pageHeight - 60) {
+      doc.addPage();
+      addHeader(doc, pageWidth, margin, logoInfo);
+      currentY = 36;
+    }
+    currentY = addCategorySection(`Baumaschinen (${construction.length})`, construction, currentY);
+    currentY += 10;
+  }
+
+  // Add motorcycles section
+  if (motorcycles.length > 0) {
+    // Check if we need a new page
+    if (currentY > pageHeight - 60) {
+      doc.addPage();
+      addHeader(doc, pageWidth, margin, logoInfo);
+      currentY = 36;
+    }
+    addCategorySection(`Motorräder (${motorcycles.length})`, motorcycles, currentY);
+  }
 
   // Add footers to all pages
   const totalPages = doc.getNumberOfPages();
