@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { LogOut, Mail, Car, HandCoins, Eye, Trash2, Plus, X, Upload, Check, ShoppingCart, Pencil, StickyNote, ChevronLeft, ChevronRight, CalendarDays, Download, Archive, AlertTriangle } from "lucide-react";
+import { LogOut, Mail, Car, HandCoins, Eye, Trash2, Plus, X, Upload, Check, ShoppingCart, Pencil, StickyNote, ChevronLeft, ChevronRight, CalendarDays, Download, Archive, AlertTriangle, FileJson } from "lucide-react";
 import { generateStockPdf } from "@/utils/generateStockPdf";
+import { exportCarsToJson } from "@/utils/exportCars";
 import AppointmentCalendar from "@/components/admin/AppointmentCalendar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -984,6 +985,20 @@ const [newCarData, setNewCarData] = useState({
                   <Button 
                     variant="outline" 
                     onClick={async () => {
+                      try {
+                        await exportCarsToJson();
+                        toast({ title: "JSON Export", description: "Fahrzeugdaten wurden exportiert.", duration: 3000 });
+                      } catch (error) {
+                        toast({ title: "Fehler", description: "Export fehlgeschlagen.", variant: "destructive" });
+                      }
+                    }}
+                  >
+                    <FileJson className="h-4 w-4 mr-2" />
+                    JSON
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={async () => {
                       if (carsForSale) {
                         toast({ title: "PDF wird erstellt...", description: "Bilder werden geladen.", duration: 2000 });
                         await generateStockPdf(carsForSale);
@@ -992,7 +1007,7 @@ const [newCarData, setNewCarData] = useState({
                     }}
                   >
                     <Download className="h-4 w-4 mr-2" />
-                    PDF Export
+                    PDF
                   </Button>
                   <Button onClick={() => setIsAddCarOpen(true)}>
                     <Plus className="h-4 w-4 mr-2" />
